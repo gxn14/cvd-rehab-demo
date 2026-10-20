@@ -3,31 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>自我管理数字平台</title>
+    <title>护理研究原型平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            boxShadow: { soft: "0 10px 30px rgba(15, 23, 42, 0.08)" },
+            boxShadow: { soft: '0 10px 30px rgba(15, 23, 42, 0.08)' },
             colors: {
-              medical: { 50: "#eef8ff", 100: "#d9f0ff", 500: "#0f8ec7", 700: "#0d5d87", 900: "#15364d" },
-              care: { 50: "#f3f8f5", 100: "#dff3e9", 500: "#2e9d7a", 700: "#1f6f57" },
-              risk: { 50: "#fff5f5", 100: "#ffe3e3", 500: "#ef4444", 700: "#b91c1c" },
-              warn: { 50: "#fffaf0", 100: "#fef0c7", 500: "#f59e0b", 700: "#b45309" }
+              medical: { 50: '#eef8ff', 100: '#d9f0ff', 500: '#0f8ec7', 700: '#0d5d87', 900: '#15364d' },
+              care: { 50: '#f3f8f5', 100: '#dff3e9', 500: '#2e9d7a', 700: '#1f6f57' },
+              risk: { 50: '#fff5f5', 100: '#ffe3e3', 500: '#ef4444', 700: '#b91c1c' },
+              warn: { 50: '#fffaf0', 100: '#fef0c7', 500: '#f59e0b', 700: '#b45309' }
             }
           }
         }
       };
     </script>
     <style>
+      :root {
+        --bg: #f3f7fb;
+        --card: rgba(255,255,255,0.86);
+        --line: rgba(148,163,184,0.25);
+        --medical: #0f8ec7;
+        --medical-700: #0d5d87;
+        --emerald: #2e9d7a;
+        --amber: #f59e0b;
+        --red: #ef4444;
+      }
       html { scroll-behavior: smooth; }
       body {
         font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
         background:
           radial-gradient(circle at top left, rgba(29, 78, 216, 0.18), transparent 18%),
           radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 22%),
-          #f3f7fb;
+          var(--bg);
+        color: #0f172a;
       }
       .glass { background: rgba(255,255,255,0.82); backdrop-filter: blur(10px); }
       .module-btn { border: 1px solid rgba(148,163,184,0.25); transition: all 0.2s ease; }
@@ -39,313 +50,1831 @@
       .choice-card:not(.selected) { border-color: rgba(148,163,184,0.28); }
       .toast { opacity:0; transform: translateY(12px); transition: all 0.25s ease; }
       .toast.show { opacity:1; transform: translateY(0); }
+      .stat-card { cursor:pointer; }
+      .table-scroll { overflow-x:auto; }
+      table { border-collapse: collapse; width:100%; }
+      th, td { padding:0.7rem 0.8rem; border-bottom:1px solid #e2e8f0; text-align:left; }
+      .chip { display:inline-flex; align-items:center; border-radius:9999px; padding:0.25rem 0.75rem; font-size:0.7rem; font-weight:700; }
+      .status-chip { display:inline-flex; align-items:center; border-radius:9999px; padding:0.2rem 0.7rem; font-size:0.7rem; font-weight:700; }
+      .page-shell { max-width: 1400px; margin: 0 auto; padding: 1.3rem 0.9rem 2.2rem; }
+      .nav-link.active { color: var(--medical-700); background: rgba(15,142,199,0.08); }
+      .panel { background: rgba(255,255,255,0.9); border: 1px solid rgba(148,163,184,0.2); border-radius: 26px; box-shadow: 0 10px 30px rgba(15,23,42,0.06); }
+      .label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #64748b; }
+      .muted { color:#64748b; }
+      .danger { color: #b91c1c; }
+      .soft-button { border: 1px solid #dbe3ee; background: #f8fafc; border-radius: 999px; padding: 0.55rem 1rem; font-weight: 600; }
+      .soft-button:hover { background: #eef3f9; }
+      .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+      @media (max-width: 768px) {
+        .grid-2 { grid-template-columns: 1fr; }
+      }
+      input, select, textarea, button { font: inherit; }
     </style>
   </head>
   <body>
-    <div class="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-10">
-      <header class="sticky top-0 z-20 mb-6">
-        <div class="glass mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-slate-200/70 px-4 py-3 shadow-soft">
-          <div class="flex items-center gap-3">
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-medical-700 text-lg font-bold text-white">心</div>
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">CVD CARE</div>
-              <h1 class="text-base font-bold text-slate-800">自我管理数字平台</h1>
-            </div>
-          </div>
-          <nav class="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
-            <a href="#overview" class="hover:text-medical-700">平台概览</a>
-            <a href="#patient" class="hover:text-medical-700">患者端</a>
-            <a href="#doctor" class="hover:text-medical-700">医生端</a>
-            <a href="#dce" class="hover:text-medical-700">DCE 方案</a>
-          </nav>
-          <button class="rounded-full bg-medical-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-medical-700/20 hover:bg-medical-800">预览方案</button>
-        </div>
-      </header>
-
-      <section id="overview" class="mb-10 rounded-[28px] bg-gradient-to-br from-slate-900 via-slate-800 to-medical-900 px-5 py-7 text-white shadow-soft md:px-8 md:py-10">
-        <div class="grid items-center gap-8 lg:grid-cols-[1.3fr_1fr]">
-          <div>
-            <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-sky-100">
-              <span class="badge-dot bg-emerald-400"></span>
-              未来型数字服务示范平台
-            </div>
-            <h2 class="max-w-xl text-3xl font-black leading-tight md:text-5xl">
-              心血管疾病患者居家心脏康复<br />自我管理数字平台
-            </h2>
-            <p class="mt-4 max-w-lg text-sm leading-7 text-slate-200 md:text-base">
-              面向患者、医生与研究者，聚焦“管理-随访-风险预警-分层服务”闭环，
-              通过数字化工具提升居家康复依从性、优化医生工作流，并支撑 DCE 偏好调研与优先级决策。
-            </p>
-            <div class="mt-6 flex flex-wrap gap-3">
-              <button class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">患者端体验</button>
-              <button class="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10">研究服务视角</button>
-            </div>
-            <div class="mt-8 grid max-w-lg grid-cols-3 gap-3">
-              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-sky-300">3</div><div class="mt-1 text-xs text-slate-200">服务层级</div></div>
-              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-emerald-300">12k+</div><div class="mt-1 text-xs text-slate-200">患者数据点</div></div>
-              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-amber-300">24/7</div><div class="mt-1 text-xs text-slate-200">远程监测</div></div>
-            </div>
-          </div>
-
-          <div class="rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-soft">
-            <div class="mb-3 flex items-center justify-between px-2">
-              <span class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Architecture</span>
-              <span class="rounded-full bg-emerald-400/15 px-2 py-1 text-[10px] font-semibold text-emerald-200">运行中</span>
-            </div>
-            <div class="space-y-4">
-              <div class="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-3">
-                <div class="text-xs font-semibold text-sky-100">数据层</div>
-                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
-                  <span class="rounded-full bg-white/10 px-2 py-1">患者打卡</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">血压</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">血糖</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">运动</span>
-                </div>
-              </div>
-              <div class="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-3">
-                <div class="text-xs font-semibold text-emerald-100">服务层</div>
-                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
-                  <span class="rounded-full bg-white/10 px-2 py-1">风险评分</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">处方推荐</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">AI提醒</span>
-                </div>
-              </div>
-              <div class="rounded-2xl border border-violet-300/20 bg-violet-500/10 p-3">
-                <div class="text-xs font-semibold text-violet-100">应用层</div>
-                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
-                  <span class="rounded-full bg-white/10 px-2 py-1">患者端</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">医生端</span>
-                  <span class="rounded-full bg-white/10 px-2 py-1">研究员端</span>
-                </div>
-              </div>
-              <div class="flow-bar"></div>
-              <div class="grid grid-cols-3 gap-2 text-center text-[11px] text-slate-200">
-                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-sky-200">患者打卡</div></div>
-                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-emerald-200">智能分析</div></div>
-                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-amber-200">医生预警</div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="mb-10 rounded-[30px] border border-slate-200 bg-white/80 p-5 shadow-soft md:p-7">
-        <div class="mb-6 flex items-center justify-between">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Patient Entry</div>
-            <h3 class="mt-1 text-2xl font-bold text-slate-800">患者端入口的三层演进</h3>
-          </div>
-          <div class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 md:block">电话短信 → 微信小程序 → App + 可穿戴</div>
-        </div>
-        <div class="grid gap-4 md:grid-cols-3">
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-200 text-sm font-bold text-slate-700">1</span><span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">短信</span></div>
-            <div class="text-xl font-bold text-slate-800">电话短信</div>
-            <p class="mt-3 text-sm leading-6 text-slate-600">适合老年群体基础提醒，重点解决“提醒-复诊-服药”信息覆盖问题。</p>
-            <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-3 text-xs text-slate-500">发送：按时服药、复诊提醒、康复打卡提醒</div>
-          </div>
-          <div class="rounded-2xl border border-medical-200 bg-medical-50 p-4">
-            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-medical-100 text-sm font-bold text-medical-700">2</span><span class="rounded-full bg-medical-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-medical-700">微信</span></div>
-            <div class="text-xl font-bold text-slate-800">微信小程序</div>
-            <p class="mt-3 text-sm leading-6 text-slate-600">以“场景化服务”提供活动提醒、打卡记录和在线答疑，提高互动效率。</p>
-            <div class="mt-4 rounded-xl border border-dashed border-medical-200 bg-white p-3 text-xs text-medical-700">重点：门诊预约、运动提醒、心理支持、服务入口</div>
-          </div>
-          <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700">3</span><span class="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700">App</span></div>
-            <div class="text-xl font-bold text-slate-800">App + 可穿戴</div>
-            <p class="mt-3 text-sm leading-6 text-slate-600">实现长期监测和个性化康复方案，结合心率、步数、血压、血糖数据进行持续管理。</p>
-            <div class="mt-4 rounded-xl border border-dashed border-emerald-200 bg-white p-3 text-xs text-emerald-700">重点：数据回传、风险预警、智能处方、运动进度</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="patient" class="mb-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
-          <div class="mb-5 flex items-center justify-between">
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Patient Dashboard</div>
-              <h3 class="mt-1 text-2xl font-bold text-slate-800">患者端看板</h3>
-            </div>
-            <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">今日状态：稳定</div>
-          </div>
-
-          <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg text-emerald-700">🏃</div><div class="text-base font-bold text-slate-800">运动康复</div><div class="mt-1 text-xs text-slate-500">计划与打卡</div></button>
-            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-lg text-sky-700">💊</div><div class="text-base font-bold text-slate-800">用药管理</div><div class="mt-1 text-xs text-slate-500">提醒与服药记录</div></button>
-            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-lg text-violet-700">🧠</div><div class="text-base font-bold text-slate-800">心理营养</div><div class="mt-1 text-xs text-slate-500">情绪与饮食</div></button>
-            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-lg text-amber-700">👨‍👩‍👧‍👦</div><div class="text-base font-bold text-slate-800">照护者培训</div><div class="mt-1 text-xs text-slate-500">家庭支持</div></button>
-          </div>
-
-          <div class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div class="mb-3 flex items-center justify-between"><div class="text-lg font-bold text-slate-800">今日运动打卡进度</div><div class="text-sm font-semibold text-medical-700">72%</div></div>
-              <div class="h-3 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-full w-[72%] rounded-full bg-gradient-to-r from-emerald-500 via-medical-500 to-sky-500"></div></div>
-              <div class="mt-4 flex items-center justify-between text-sm text-slate-600"><span>已完成：20/28 分钟</span><span>目标：步行 30 分钟</span></div>
-              <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                <div class="rounded-xl bg-white p-3"><div class="text-xs text-slate-500">血压</div><div class="mt-1 flex items-end gap-2"><span class="text-2xl font-black text-slate-800">126/78</span><span class="text-xs text-emerald-600">mmHg</span></div></div>
-                <div class="rounded-xl bg-white p-3"><div class="text-xs text-slate-500">血糖</div><div class="mt-1 flex items-end gap-2"><span class="text-2xl font-black text-slate-800">6.2</span><span class="text-xs text-emerald-600">mmol/L</span></div></div>
-              </div>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div class="text-lg font-bold text-slate-800">数据趋势</div>
-              <div class="mt-4 space-y-3">
-                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>心率</span><span>70 bpm</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[68%] rounded-full bg-gradient-to-r from-amber-300 to-orange-500"></div></div></div>
-                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>睡眠</span><span>7.4 h</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[74%] rounded-full bg-gradient-to-r from-sky-400 to-cyan-600"></div></div></div>
-                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>步数</span><span>6,280</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[82%] rounded-full bg-gradient-to-r from-emerald-400 to-green-600"></div></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
-          <div class="mb-5"><div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Care Journey</div><h3 class="mt-1 text-2xl font-bold text-slate-800">随访与处方</h3></div>
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-3 flex items-center justify-between"><div class="text-xl font-bold text-slate-800">下一次随访</div><div class="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">已预约</div></div>
-            <div class="rounded-2xl bg-white p-3"><div class="mb-2 text-sm text-slate-500">时间</div><div class="text-xl font-black text-slate-800">2026-10-23 15:30</div></div>
-            <div class="mt-4"><div class="mb-2 text-sm text-slate-500">方式</div><div class="flex gap-2"><button data-toggle="village" class="toggle-btn flex-1 rounded-xl border border-medical-300 bg-medical-100 px-3 py-2 text-sm font-semibold text-medical-700">村医上门</button><button data-toggle="remote" class="toggle-btn flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600">远程线上</button></div></div>
-            <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-100 p-3"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-slate-700">随访人</span><span class="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-semibold text-sky-700">村医团队</span></div><div class="mt-2 text-sm text-slate-600">主责：村卫生室 + 乡镇护士指导</div></div>
-          </div>
-          <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-3 text-lg font-bold text-slate-800">康复处方卡</div>
-            <div class="space-y-3">
-              <div class="rounded-xl bg-white p-3"><div class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">运动处方</div><div class="text-base font-bold text-slate-800">快走 + 呼吸训练</div><div class="mt-1 text-sm text-slate-600">每周 5 次，每次 30 分钟；强度为轻至中等。</div></div>
-              <div class="rounded-xl bg-white p-3"><div class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">用药提醒</div><div class="text-base font-bold text-slate-800">阿司匹林 100mg</div><div class="mt-1 text-sm text-slate-600">每日一次，餐后服药；提醒：过敏史及胃部不适反馈。</div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="doctor" class="mb-10 grid gap-6 xl:grid-cols-[1fr_1.05fr]">
-        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
-          <div class="mb-5"><div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Clinical Triage</div><h3 class="mt-1 text-2xl font-bold text-slate-800">医生端管理看板</h3></div>
-          <div class="space-y-4">
-            <div class="rounded-2xl border border-risk-200 bg-risk-50 p-4">
-              <div class="flex items-center justify-between"><div class="text-lg font-bold text-risk-700">高风险预警</div><span class="rounded-full bg-risk-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-risk-700">红</span></div>
-              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者A</div><div class="mt-1 font-bold text-slate-800">血压 160/96</div></div>
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-risk-700">需紧急复诊</div></div>
-              </div>
-            </div>
-            <div class="rounded-2xl border border-warn-200 bg-warn-50 p-4">
-              <div class="flex items-center justify-between"><div class="text-lg font-bold text-warn-700">中风险观察</div><span class="rounded-full bg-warn-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn-700">黄</span></div>
-              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者B</div><div class="mt-1 font-bold text-slate-800">活动量下降 18%</div></div>
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-warn-700">规律提醒</div></div>
-              </div>
-            </div>
-            <div class="rounded-2xl border border-care-200 bg-care-50 p-4">
-              <div class="flex items-center justify-between"><div class="text-lg font-bold text-care-700">正常管理</div><span class="rounded-full bg-care-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-care-700">绿</span></div>
-              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者C</div><div class="mt-1 font-bold text-slate-800">血糖稳定</div></div>
-                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-care-700">保持随访</div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
-          <div class="mb-5 flex items-center justify-between">
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Care Queue</div>
-              <h3 class="mt-1 text-2xl font-bold text-slate-800">随访排程列表</h3>
-            </div>
-            <button class="rounded-full bg-medical-700 px-3 py-1.5 text-xs font-semibold text-white">新增任务</button>
-          </div>
-          <div class="space-y-3">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">张晓丽</div><div class="mt-1 text-xs text-slate-500">高血压 + 运动依从低</div></div><div class="rounded-full bg-risk-100 px-2 py-1 text-[10px] font-semibold text-risk-700">每周</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：村医</span><span class="rounded-full bg-blue-100 px-2 py-1 text-blue-700">重点监测</span></div></div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">王建国</div><div class="mt-1 text-xs text-slate-500">糖尿病合并冠心病</div></div><div class="rounded-full bg-warn-100 px-2 py-1 text-[10px] font-semibold text-warn-700">每两周</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：乡镇护士</span><span class="rounded-full bg-amber-100 px-2 py-1 text-amber-700">远程随访</span></div></div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">李春梅</div><div class="mt-1 text-xs text-slate-500">已掌握数字工具，行为习惯稳定</div></div><div class="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">每月</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：县医院</span><span class="rounded-full bg-green-100 px-2 py-1 text-green-700">数字友好型</span></div></div>
-          </div>
-          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-3 text-lg font-bold text-slate-800">患者画像 / 标签</div>
-            <div class="flex flex-wrap gap-2">
-              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">经济敏感型</span>
-              <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700">信任村医型</span>
-              <span class="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">数字友好型</span>
-              <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">高复发风险</span>
-              <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-700">心理压力高</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="dce" class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
-        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">DCE Interactive Demo</div>
-            <h3 class="mt-1 text-2xl font-bold text-slate-800">服务方案偏好选择</h3>
-          </div>
-          <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">模拟：PPT 第33页 / 第73页中的选择卡片</div>
-        </div>
-        <div class="grid gap-5 lg:grid-cols-2">
-          <button class="choice-card selected group rounded-[28px] border bg-white p-5 text-left" data-choice="A">
-            <div class="mb-4 flex items-center justify-between">
-              <div><div class="text-xs font-semibold uppercase tracking-[0.18em] text-medical-700">方案 A</div><div class="mt-1 text-2xl font-black text-slate-800">家庭式持续支持</div></div>
-              <span class="rounded-full bg-medical-100 px-3 py-1 text-xs font-semibold text-medical-700">更偏互动型</span>
-            </div>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务提供者</span><span class="text-sm font-bold text-slate-800">村医 + 乡镇护士</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务方式</span><span class="text-sm font-bold text-slate-800">上门随访 + 线上提醒</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务频次</span><span class="text-sm font-bold text-slate-800">每周 1 次</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">自付费用</span><span class="text-sm font-bold text-slate-800">¥280 / 月</span></div>
-            </div>
-            <div class="mt-5 flex items-center justify-between"><div class="text-xs text-slate-500">适用人群：信任村医型、经济敏感型</div><div class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">推荐</div></div>
-          </button>
-
-          <button class="choice-card group rounded-[28px] border bg-white p-5 text-left" data-choice="B">
-            <div class="mb-4 flex items-center justify-between">
-              <div><div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">方案 B</div><div class="mt-1 text-2xl font-black text-slate-800">数字化远程管理</div></div>
-              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">更偏数字型</span>
-            </div>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务提供者</span><span class="text-sm font-bold text-slate-800">县医院 + APP + AI助手</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务方式</span><span class="text-sm font-bold text-slate-800">云端管理 + 远程问诊</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务频次</span><span class="text-sm font-bold text-slate-800">每两周 1 次</span></div>
-              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">自付费用</span><span class="text-sm font-bold text-slate-800">¥420 / 月</span></div>
-            </div>
-            <div class="mt-5 flex items-center justify-between"><div class="text-xs text-slate-500">适用人群：数字友好型、追求效率型</div><div class="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">创新</div></div>
-          </button>
-        </div>
-
-        <div class="mt-6 flex flex-col items-center justify-center gap-4">
-          <button id="statusChoice" class="rounded-full border border-slate-300 bg-slate-100 px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-200">两者均不选（维持现状）</button>
-          <div id="feedbackToast" class="toast fixed bottom-6 right-6 max-w-sm rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-2xl">记录成功，您的选择将帮助平台优化功能优先级</div>
-        </div>
-      </section>
-    </div>
+    <div id="app"></div>
 
     <script>
-      const choiceCards = document.querySelectorAll('.choice-card');
-      const toggleButtons = document.querySelectorAll('.toggle-btn');
-      const statusChoice = document.getElementById('statusChoice');
-      const feedbackToast = document.getElementById('feedbackToast');
-      choiceCards.forEach((card) => {
-        card.addEventListener('click', () => {
-          choiceCards.forEach((c) => c.classList.remove('selected'));
-          card.classList.add('selected');
-          showToast('记录成功，您的选择将帮助平台优化功能优先级');
-        });
-      });
-      statusChoice.addEventListener('click', () => {
-        choiceCards.forEach((c) => c.classList.remove('selected'));
-        showToast('已选择维持现状：系统将保留当前服务策略');
-      });
-      toggleButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          toggleButtons.forEach((el) => {
-            el.classList.remove('bg-medical-100', 'border-medical-300', 'text-medical-700');
-            el.classList.add('bg-white', 'border-slate-200', 'text-slate-600');
-          });
-          btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600');
-          btn.classList.add('bg-medical-100', 'border-medical-300', 'text-medical-700');
-        });
-      });
-      function showToast(message) {
-        feedbackToast.textContent = message;
-        feedbackToast.classList.add('show');
-        clearTimeout(window.toastTimer);
-        window.toastTimer = setTimeout(() => { feedbackToast.classList.remove('show'); }, 2200);
+      const STORAGE_KEY = 'cvd-demo-data-v1';
+      const DEMO_NOTICE = '本平台为护理学研究原型，所有患者信息、健康数据、随访记录、风险事件和DCE题目均为模拟数据，仅用于界面演示与交互测试，不用于真实临床诊疗。';
+
+      const routeMeta = {
+        '/home': '首页工作台',
+        '/patients': '患者管理',
+        '/health': '健康数据中心',
+        '/plans': '康复计划',
+        '/followups': '随访管理',
+        '/events': '风险事件',
+        '/education': '健康教育',
+        '/ai': 'AI问答演示',
+        '/profiles': '患者画像',
+        '/dce': 'DCE演示',
+        '/system': '系统说明'
+      };
+
+      const NAV_ITEMS = [
+        { path: '/home', label: '首页' },
+        { path: '/patients', label: '患者管理' },
+        { path: '/health', label: '健康数据' },
+        { path: '/plans', label: '康复计划' },
+        { path: '/followups', label: '随访管理' },
+        { path: '/events', label: '风险事件' },
+        { path: '/education', label: '健康教育' },
+        { path: '/ai', label: 'AI问答' },
+        { path: '/profiles', label: '画像' },
+        { path: '/dce', label: 'DCE' },
+        { path: '/system', label: '系统说明' }
+      ];
+
+      function safeString(value) { return value == null ? '' : String(value); }
+      function formatDate(dateValue) {
+        if (!dateValue) return '—';
+        const d = new Date(dateValue + 'T00:00:00');
+        if (Number.isNaN(d.getTime())) return dateValue;
+        return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
       }
+      function formatDateTime(dateValue) {
+        if (!dateValue) return '—';
+        const d = new Date(dateValue);
+        if (Number.isNaN(d.getTime())) return dateValue;
+        return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      }
+      function uid(prefix='id') {
+        return prefix + '-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-6);
+      }
+
+      function getDefaultPatients() {
+        const base = [
+          { id: 'P0001', name: '张建国', age: 68, gender: '男', diagnosis: '冠心病、PCI术后', treatment: '口服阿司匹林+他汀', region: '城东社区', managementLevel: '重点关注', status: '持续管理', caregiver: '孙女', phoneUsage: '微信+电话', stage: '康复中期', archiveDate: '2025-12-11', riskNote: '最近血压波动' },
+          { id: 'P0002', name: '李秀兰', age: 72, gender: '女', diagnosis: '冠心病', treatment: 'β受体阻滞剂', region: '城南街道', managementLevel: '常规管理', status: '稳定', caregiver: '丈夫', phoneUsage: '电话', stage: '维护期', archiveDate: '2026-01-03', riskNote: '睡眠时长中等' },
+          { id: 'P0003', name: '王志强', age: 59, gender: '男', diagnosis: '心肌梗死恢复期', treatment: '抗血小板+降压治疗', region: '北区', managementLevel: '重点关注', status: '观察中', caregiver: '妻子', phoneUsage: '微信', stage: '恢复期', archiveDate: '2026-01-15', riskNote: '活动量下降 15%' },
+          { id: 'P0004', name: '刘桂英', age: 65, gender: '女', diagnosis: '冠心病合并高血压', treatment: '降压药+生活方式管理', region: '西湖村', managementLevel: '常规管理', status: '稳定', caregiver: '儿子', phoneUsage: '微信', stage: '巩固期', archiveDate: '2026-02-08', riskNote: '用药依从性一般' },
+          { id: 'P0005', name: '赵国栋', age: 61, gender: '男', diagnosis: '冠心病、PCI术后', treatment: '双抗+他汀', region: '开发区', managementLevel: '常规管理', status: '稳定', caregiver: '家属', phoneUsage: '微信', stage: '康复中期', archiveDate: '2026-02-20', riskNote: '规律锻炼' },
+        ];
+
+        const names = [
+          '陈琳', '周明', '徐晓梅', '程海峰', '沈梅', '冯亮', '吴芳', '邹强', '姚静', '刘涛', '徐伟', '赵丽', '杨杰', '何娟', '周金华', '马婷婷', '许翠', '黄勇', '梁妍', '宋文', '韩平', '郭敏', '曹云', '蒋成', '曾瑶', '林华', '庞胜', '石娟', '章威', '苏雪', '秦浩'
+        ];
+
+        const generated = names.map((name, idx) => {
+          const num = String(idx + 1).padStart(2, '0');
+          const patientId = `P00${idx + 6}`;
+          const age = 52 + ((idx * 7) % 22);
+          const gender = idx % 2 === 0 ? '女' : '男';
+          const diagnosisList = ['冠心病', '心肌梗死恢复期', '高血压', '心衰早期', '冠心病合并糖尿病', '心律失常'];
+          const treatmentList = ['口服抗血小板药', '血压管理', '运动康复指导', '生活方式管理', '中药调理', 'PCI术后随访'];
+          const regions = ['新城社区', '环城东村', '南湾社区', '云水苑', '老城街道', '北港镇', '新康小区', '盐湖村', '花桥社区'];
+          const stages = ['早期康复', '恢复期', '中期康复', '维护期'];
+          return {
+            id: patientId,
+            name,
+            age,
+            gender,
+            diagnosis: diagnosisList[idx % diagnosisList.length],
+            treatment: treatmentList[idx % treatmentList.length],
+            region: regions[idx % regions.length],
+            managementLevel: idx % 3 === 0 ? '重点关注' : '常规管理',
+            status: ['稳定', '观察中', '关注中', '待复诊'][idx % 4],
+            caregiver: idx % 2 === 0 ? '家属' : '陪护人员',
+            phoneUsage: idx % 2 === 0 ? '微信+电话' : '手机APP',
+            stage: stages[idx % stages.length],
+            archiveDate: `2026-0${(idx % 8)+1}-1${(idx % 8)+2}`.replace(/-0([1-9])-(1[0-9]|20|[2-9])/, '-0$1-$2'),
+            riskNote: idx % 2 === 0 ? '近期活动量略下降' : '自我管理表现一般'
+          };
+        });
+        return [...base, ...generated];
+      }
+
+      function buildDemoRecords() {
+        const patients = getDefaultPatients();
+        const healthRecords = [];
+        const rehabPlans = [];
+        const rehabTasks = [];
+        const followUps = [];
+        const riskEvents = [];
+        const patientProfiles = [];
+        const dceQuestions = [];
+
+        const dayNames = ['2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19'];
+
+        patients.forEach((patient, patientIndex) => {
+          dayNames.forEach((date, dayIdx) => {
+            const baseSystolic = 124 + (patientIndex % 5) * 4 + (dayIdx % 3) * 2;
+            const baseDiastolic = 78 + (patientIndex % 4) + (dayIdx % 2);
+            const heartRate = 68 + (patientIndex % 4) * 3 + (dayIdx % 3);
+            const weight = 60 + patientIndex * 0.8 + (dayIdx % 4) * 0.3;
+            const steps = 3500 + ((patientIndex + dayIdx) * 180) % 3800;
+            const sleepHours = 5.5 + ((patientIndex + dayIdx) % 3) * 0.8;
+            healthRecords.push({
+              id: uid('record'),
+              patientId: patient.id,
+              date,
+              type: 'bloodPressure',
+              systolic: baseSystolic,
+              diastolic: baseDiastolic,
+              heartRate,
+              weight: Number(weight.toFixed(1)),
+              steps,
+              sleepHours: Number(sleepHours.toFixed(1)),
+              selfManagement: ['良好', '一般', '积极'][dayIdx % 3],
+              note: '模拟健康记录，仅供界面验证',
+              isDemo: true
+            });
+          });
+
+          const planId = uid('plan');
+          rehabPlans.push({
+            id: planId,
+            patientId: patient.id,
+            title: `${patient.name}的康复计划`,
+            startDate: '2026-10-01',
+            endDate: '2026-10-31',
+            status: '进行中',
+            completionRate: 72 + (patientIndex % 6),
+            summary: '基于虚拟患者演示，本版本仅用于界面展示与交互验证，不用于临床处方。',
+            isDemo: true
+          });
+
+          const tasks = [
+            { taskName: '健康数据记录', description: '每日记录血压/心率/步数', dueDate: '2026-10-19', status: dayIdxFromIndex(patientIndex) % 2 === 0 ? '已完成' : '待完成', patientNote: '记录时保持规律' },
+            { taskName: '阅读健康教育材料', description: '阅读相关康复知识', dueDate: '2026-10-20', status: patientIndex % 2 === 0 ? '已完成' : '待完成', patientNote: '理解方法和注意事项' },
+            { taskName: '记录饮食情况', description: '记录每日饮食和盐分摄入', dueDate: '2026-10-21', status: '待完成', patientNote: '保持低盐饮食' },
+            { taskName: '查看复诊安排', description: '确认复诊时间和入口', dueDate: '2026-10-22', status: '待完成', patientNote: '了解下一步管理安排' }
+          ];
+
+          tasks.forEach((task, idx) => {
+            rehabTasks.push({
+              id: uid('task'),
+              patientId: patient.id,
+              taskName: task.taskName,
+              description: task.description,
+              planDate: task.dueDate,
+              status: task.status,
+              finishedAt: task.status === '已完成' ? '2026-10-18T08:00:00' : '',
+              note: task.patientNote,
+              isDemo: true
+            });
+          });
+
+          const followUpCount = patientIndex < 10 ? 2 : 1;
+          for (let i = 0; i < followUpCount; i++) {
+            const state = i === 0 ? '已完成' : '待随访';
+            followUps.push({
+              id: uid('follow'),
+              patientId: patient.id,
+              patientName: patient.name,
+              planDate: `2026-10-${(15 + patientIndex + i) % 27 + 1}`,
+              actualDate: state === '已完成' ? '2026-10-18' : '',
+              method: i % 2 === 0 ? '电话随访' : '门诊复诊',
+              staff: '社区护士A',
+              status: state,
+              result: state === '已完成' ? '患者自述活动量增加，呼吸顺畅' : '等待患者反馈',
+              nextPlan: '再次确认生活方式管理',
+              note: '研究原型模拟记录',
+              isDemo: true
+            });
+          }
+
+          if (patientIndex < 15) {
+            riskEvents.push({
+              id: uid('event'),
+              patientId: patient.id,
+              patientName: patient.name,
+              eventType: patientIndex % 3 === 0 ? '健康数据异常提示' : '患者主动求助',
+              description: patientIndex % 2 === 0 ? '连续3天活动量低于目标80%' : '患者反馈偶有胸闷感，已提醒及时就医',
+              eventTime: `2026-10-${(18 + patientIndex) % 27 + 1}T09:00:00`,
+              source: '健康数据系统',
+              status: ['待评估', '待联系', '处理中', '已完成'][patientIndex % 4],
+              handler: '护士组',
+              processNote: '模拟处理记录，仅供研究演示。',
+              processedAt: patientIndex % 4 === 3 ? '2026-10-19T10:00:00' : '',
+              isDemo: true
+            });
+          }
+
+          const profileTypes = ['数字使用困难型', '经济敏感型', '家庭支持不足型', '数字使用熟练型', '医护信任偏好型'];
+          patientProfiles.push({
+            id: uid('profile'),
+            patientId: patient.id,
+            title: `${profileTypes[patientIndex % profileTypes.length]}案例`,
+            type: profileTypes[patientIndex % profileTypes.length],
+            device: patientIndex % 2 === 0 ? '仅使用电话' : '微信+APP',
+            familyCare: patientIndex % 3 === 0 ? '家属参与较少' : '家属支持较强',
+            costs: '关注服务费用与补贴政策',
+            challenge: '难以坚持定期打卡与随访',
+            support: '可提供电话提醒、家庭支持和简化流程',
+            isDemo: true
+          });
+        });
+
+        const articleData = [
+          { title: '冠心病基础知识：常见风险因素与自我管理', category: '冠心病基础知识', audience: '患者及家属', content: '冠心病与血压、血脂、吸烟、糖尿病等风险因素相关。一般建议通过规律监测、健康生活方式和定期随访有效管理。', suggestion: '保持规律生活方式，监测血压和体重变化，主动配合复诊。', caution: '本信息仅为一般健康提醒，不代替专科诊疗建议。', sourceTitle: '中国心血管病防治指南', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)', updatedAt: '2026-10-01', status: '已审核' },
+          { title: '居家心脏康复的基本原则', category: '居家心脏康复', audience: '患者', content: '居家心脏康复强调安全、适度、持续。患者应根据医护人员建议进行活动与休息。', suggestion: '逐步增加活动时间并保持规律作息。', caution: '不建议自行加大运动强度。', sourceTitle: '中国心血管病防治指南', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)', updatedAt: '2026-10-05', status: '已审核' },
+          { title: '有氧运动与康复活动的安全注意事项', category: '运动康复', audience: '患者', content: '适度活动可改善心肺功能和生活质量，但要注意运动强度与体征变化。', suggestion: '从低强度活动开始，逐步增加。', caution: '若出现胸痛或明显呼吸困难，应立即停止并寻求急救。', sourceTitle: 'WHO: Physical activity', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', updatedAt: '2026-10-07', status: '已审核' },
+          { title: '合理膳食：降低盐和油脂摄入', category: '合理膳食', audience: '患者', content: '控制盐、饱和脂肪和加工食品可帮助心血管健康。', suggestion: '优先选择清淡饮食，规律用餐。', caution: '请在医生/营养师指导下调整饮食。', sourceTitle: 'WHO Healthy diet', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', updatedAt: '2026-10-08', status: '已审核' },
+          { title: '心血管患者用药管理基础', category: '用药管理', audience: '患者', content: '药物治疗需要按时规律使用，且如有不适应及时联系医护人员。', suggestion: '留意药物名称、时间与用量。', caution: '请勿自行调整或停药。', sourceTitle: 'WHO Medication Safety', sourceUrl: 'https://www.who.int/health-topics/medication-safety', updatedAt: '2026-10-06', status: '已审核' },
+          { title: '戒烟限酒与生活方式调整', category: '戒烟限酒', audience: '患者', content: '吸烟和过量饮酒会增加心血管风险，戒烟限酒有助于恢复。', suggestion: '减少刺激性饮品和烟酒摄入。', caution: '如有明显不适请及时就医。', sourceTitle: 'WHO Tobacco', sourceUrl: 'https://www.who.int/health-topics/tobacco', updatedAt: '2026-10-09', status: '已审核' },
+          { title: '心理调适：缓解焦虑和抑郁', category: '心理调适', audience: '患者', content: '情绪管理、休息和支持网络对康复非常重要。', suggestion: '积极沟通，适度休息和锻炼。', caution: '情绪持续困扰时应寻求专业帮助。', sourceTitle: 'WHO Mental health', sourceUrl: 'https://www.who.int/health-topics/mental-health', updatedAt: '2026-10-10', status: '已审核' },
+          { title: '复诊与危险信号识别', category: '复诊与危险信号', audience: '患者与家属', content: '定期复诊有助于调整管理方案。若出现胸痛、明显呼吸困难等症状，应立即求助急救。', suggestion: '建立复诊提醒和症状记录。', caution: '若出现疑似急症，应不要等待平台反馈。', sourceTitle: 'WHO: Emergency care', sourceUrl: 'https://www.who.int/health-topics/emergency-care', updatedAt: '2026-10-11', status: '已审核' },
+          { title: '慢性病患者的睡眠与恢复管理', category: '居家心脏康复', audience: '中老年患者', content: '规律作息、充足睡眠和减少熬夜有利于心脏恢复。', suggestion: '控制睡前刺激和规律作息。', caution: '长期失眠应咨询医护人员。', sourceTitle: '待补充权威来源', sourceUrl: '', updatedAt: '2026-10-11', status: '待补充' },
+          { title: '血压自测与记录方法', category: '冠心病基础知识', audience: '患者', content: '血压自测应在安静环境下进行，并记录时间与数值。', suggestion: '每天固定时间测量并对比变化。', caution: '本内容仅供一般健康教育使用。', sourceTitle: '待补充权威来源', sourceUrl: '', updatedAt: '2026-10-12', status: '待补充' },
+          { title: '低盐饮食与食物选择建议', category: '合理膳食', audience: '患者', content: '低盐饮食可帮助控制高血压，并降低心血管事件风险。', suggestion: '减少加工食品和调味料使用。', caution: '如有肾病及其他疾病，请遵医嘱调整。', sourceTitle: 'WHO Healthy diet', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', updatedAt: '2026-10-12', status: '已审核' },
+          { title: '使用数字健康工具的基本建议', category: '居家心脏康复', audience: '老年患者', content: '数字工具可帮助记录康复数据，但应保持简洁和一致性。', suggestion: '使用简单流程并与家属协助。', caution: '本平台仅用于演示，不用于真正的临床管理。', sourceTitle: 'WHO Digital health', sourceUrl: 'https://www.who.int/health-topics/digital-health', updatedAt: '2026-10-13', status: '已审核' }
+        ];
+
+        const qaKnowledge = [
+          { question: '冠心病患者日常康复需要注意什么？', answer: '重点做好规律作息、适度活动、规律监测血压和心率、按医嘱服药，并定期随访。', scope: '患者', caution: '本回答仅为一般健康信息，不替代临床诊疗建议。', sourceName: 'WHO cardiovascular diseases fact sheet', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)', status: '已审核' },
+          { question: '我应该如何记录血压？', answer: '建议固定时间、安静状态下测量血压，并记录日期和数值，便于随访。', scope: '患者', caution: '注意不要把测量结果直接当作诊断结论。', sourceName: 'WHO website', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', status: '已审核' },
+          { question: '我能不能自行增加运动强度？', answer: '不建议在未评估的情况下自行增加运动强度。应根据医生/康复师建议逐步调整。', scope: '患者', caution: '若出现胸痛、明显呼吸困难，应立即停止并寻求急救。', sourceName: 'WHO physical activity', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', status: '已审核' },
+          { question: '戒烟和限酒有什么好处？', answer: '有助于改善血管功能、降低心血管风险，并提升康复效果。', scope: '患者', caution: '如已有依赖症状请咨询专业人员。', sourceName: 'WHO tobacco', sourceUrl: 'https://www.who.int/health-topics/tobacco', status: '已审核' },
+          { question: '服药时需要注意什么？', answer: '按时按量服药，不要擅自停药或调整剂量，如有不适应及时联系医护人员。', scope: '患者', caution: '本说明不构成药物指导。', sourceName: 'WHO medication safety', sourceUrl: 'https://www.who.int/health-topics/medication-safety', status: '已审核' },
+          { question: '什么是心脏康复？', answer: '心脏康复是通过运动、教育、心理支持和随访，帮助患者恢复生活质量和功能。', scope: '患者', caution: '个体化方案需由专业团队评估。', sourceName: 'WHO cardiovascular diseases fact sheet', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)', status: '已审核' },
+          { question: '我是否需要每天记录饮食？', answer: '记录饮食有助于及时发现问题和调整生活方式，但不是所有人都需要完全记录。', scope: '患者', caution: '本内容仅用于演示。', sourceName: 'WHO healthy diet', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', status: '已审核' },
+          { question: '睡眠不足会影响恢复吗？', answer: '会，过度疲劳和睡眠不足可能影响恢复和情绪管理。', scope: '患者', caution: '长期睡眠问题请及时咨询医护人员。', sourceName: 'WHO mental health', sourceUrl: 'https://www.who.int/health-topics/mental-health', status: '已审核' },
+          { question: '如果出现胸闷、胸痛怎么办？', answer: '出现明显胸痛、气喘、呼吸困难等急症表现，应立即寻求紧急医疗帮助，不要等待平台反馈。', scope: '患者和家属', caution: '本平台仅为模拟，不可代替急救决策。', sourceName: 'WHO emergency care', sourceUrl: 'https://www.who.int/health-topics/emergency-care', status: '已审核' },
+          { question: '我什么时候需要复诊？', answer: '一般应按医生安排复诊；如身体变化明显、药物不适或症状加重，应尽快联系医疗团队。', scope: '患者', caution: '具体安排由医护人员决定。', sourceName: 'WHO cardiovascular diseases', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)', status: '已审核' },
+          { question: '康复计划会自动生成运动处方吗？', answer: '当前演示不自动生成运动处方，所有计划仅为示例内容，需要专业医护人员评估。', scope: '系统演示', caution: '本版本不替代临床建议。', sourceName: '原型说明', sourceUrl: '#/system', status: '已审核' },
+          { question: '平台里记录的数据是真实患者吗？', answer: '不是。平台中的患者信息和数据均为虚构模拟数据，用于界面演示与研究原型测试。', scope: '系统说明', caution: '本平台不用于正式临床管理。', sourceName: '原型说明', sourceUrl: '#/system', status: '已审核' },
+          { question: '什么是患者画像？', answer: '患者画像是基于模拟场景的用户特征概述，用于研究服务设计，并非已验证的临床分类。', scope: '研究原型', caution: '仅用于展示演示，不是正式分类标准。', sourceName: '患者画像模块', sourceUrl: '#/profiles', status: '已审核' },
+          { question: '健康数据异常提示意味着什么？', answer: '它仅代表需要专业人员进一步评估，不能直接等同于疾病诊断或不安全状态。', scope: '系统说明', caution: '应由医护人员结合患者整体情况判断。', sourceName: '原型说明', sourceUrl: '#/system', status: '已审核' },
+          { question: '我可以在这个页面里新增健康记录吗？', answer: '可以，页面提供了新增、编辑和删除等示例功能，数据会保存在本地浏览器。', scope: '用户操作', caution: '浏览器本地存储仅用于演示，不适用于正式患者数据安全存储。', sourceName: '系统说明', sourceUrl: '#/system', status: '已审核' },
+          { question: 'AI问答演示是否真实使用AI？', answer: '当前阶段使用本地预设问答库，不涉及真实的AI密钥或在线模型服务。', scope: '系统说明', caution: '当前版本仅为交互演示。', sourceName: 'AI问答模块', sourceUrl: '#/ai', status: '已审核' },
+          { question: 'DCE选择题是什么？', answer: 'DCE是离散选择实验，用于模拟不同服务方案的偏好比较。当前是演示题，不用于正式研究结论。', scope: '研究原型', caution: '模拟结果不能代表真实患者偏好。', sourceName: 'DCE演示模块', sourceUrl: '#/dce', status: '已审核' },
+          { question: '如果连续几天没有记录健康数据怎么办？', answer: '系统会显示待处理事件或提醒，便于医护人员联系患者进一步支持。', scope: '患者管理', caution: '这是研究原型中的示例流程。', sourceName: '风险事件模块', sourceUrl: '#/events', status: '已审核' },
+          { question: '我需要家属帮助使用这个平台吗？', answer: '对于数字使用困难型患者，家属支持和电话提醒可以增强记录和管理的连续性。', scope: '患者管理', caution: '这是示范分类，不代表真实病人判断。', sourceName: '患者画像模块', sourceUrl: '#/profiles', status: '已审核' },
+          { question: '我能看到健康教育参考来源吗？', answer: '可以。文章页会展示来源和更新时间，并标注来源的核验状态。', scope: '健康教育', caution: '若无法核验则会标记为待补充权威来源。', sourceName: '健康教育模块', sourceUrl: '#/education', status: '已审核' },
+          { question: '平台是否支持手机浏览？', answer: '支持，页面采用响应式布局，可在电脑和手机浏览器中查看和操作。', scope: '系统说明', caution: '前端演示不涉及真实后端服务。', sourceName: '原型说明', sourceUrl: '#/system', status: '已审核' }
+        ];
+
+        const dceQuestionsList = [
+          { id: 'DCE-1', question: '如果需要选择一项居家康复服务，您倾向于哪种方案？', options: [
+            { label: '方案A', description: '社区医护人员定期电话随访' },
+            { label: '方案B', description: '县级医院康复团队线上平台管理' }
+          ], answer: null },
+          { id: 'DCE-2', question: '您更关注哪种服务方式？', options: [
+            { label: '方案A', description: '直接联系村医' },
+            { label: '方案B', description: '手机应用和远程问诊' }
+          ], answer: null },
+          { id: 'DCE-3', question: '如果预算有限，您对费用敏感度如何？', options: [
+            { label: '方案A', description: '月自付100元，频率较高' },
+            { label: '方案B', description: '月自付200元，服务更数字化' }
+          ], answer: null },
+          { id: 'DCE-4', question: '您希望随访的频次是？', options: [
+            { label: '方案A', description: '每周一次，由村医主导' },
+            { label: '方案B', description: '每两周一次，线上随访' }
+          ], answer: null },
+          { id: 'DCE-5', question: '如果需要获得专业指导，您更倾向于？', options: [
+            { label: '方案A', description: '社区服务中心邻近支持' },
+            { label: '方案B', description: '线上平台远程咨询' }
+          ], answer: null },
+          { id: 'DCE-6', question: '对于管理方式，您更希望？', options: [
+            { label: '方案A', description: '面对面接触+家属支持' },
+            { label: '方案B', description: '数字化记录+节奏更灵活' }
+          ], answer: null }
+        ];
+
+        const educationArticles = articleData.map((article, index) => ({
+          id: uid('article'),
+          ...article,
+          articleId: `A${String(index + 1).padStart(3, '0')}`,
+          isDemo: true
+        }));
+
+        return {
+          patients,
+          healthRecords,
+          rehabPlans,
+          rehabTasks,
+          followUps,
+          riskEvents,
+          educationArticles,
+          qaKnowledgeBase: qaKnowledge,
+          patientProfiles,
+          dceQuestions: dceQuestionsList,
+          dceResponses: [],
+          demoNotice: DEMO_NOTICE,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+
+      function dayIdxFromIndex(seed) {
+        return seed % 3;
+      }
+
+      function readStore() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            const initial = buildDemoRecords();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+            return initial;
+          }
+          const parsed = JSON.parse(raw);
+          if (!parsed || !parsed.patients) {
+            const initial = buildDemoRecords();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+            return initial;
+          }
+          return parsed;
+        } catch (error) {
+          console.warn('readStore error', error);
+          const initial = buildDemoRecords();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+          return initial;
+        }
+      }
+
+      function writeStore(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function getStore() {
+        return readStore();
+      }
+
+      function getPatientById(patientId) {
+        const store = getStore();
+        return store.patients.find(p => p.id === patientId) || null;
+      }
+
+      function getPatientRecords(patientId) {
+        const store = getStore();
+        return store.healthRecords.filter(r => r.patientId === patientId).sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+
+      function getPatientFollowUps(patientId) {
+        const store = getStore();
+        return store.followUps.filter(item => item.patientId === patientId).sort((a, b) => new Date(a.planDate) - new Date(b.planDate));
+      }
+
+      function getPatientEvents(patientId) {
+        const store = getStore();
+        return store.riskEvents.filter(item => item.patientId === patientId).sort((a, b) => new Date(b.eventTime) - new Date(a.eventTime));
+      }
+
+      function getPatientTasks(patientId) {
+        const store = getStore();
+        return store.rehabTasks.filter(item => item.patientId === patientId);
+      }
+
+      function getHealthSummary(patientId) {
+        const records = getPatientRecords(patientId);
+        if (!records.length) {
+          return {
+            lastSystolic: '—', lastDiastolic: '—', lastHeartRate: '—', lastWeight: '—', lastSleep: '—', lastSteps: '—', completionRate: 0, days: 0
+          };
+        }
+        const latest = records[records.length - 1];
+        const completed = records.filter(r => r.selfManagement === '良好').length;
+        return {
+          lastSystolic: latest.systolic,
+          lastDiastolic: latest.diastolic,
+          lastHeartRate: latest.heartRate,
+          lastWeight: latest.weight,
+          lastSleep: latest.sleepHours,
+          lastSteps: latest.steps,
+          completionRate: Math.round((completed / records.length) * 100),
+          days: records.length
+        };
+      }
+
+      function getDashboardStats() {
+        const store = getStore();
+        const totalPatients = store.patients.length;
+        const openFollowUps = store.followUps.filter(item => item.status === '待随访').length;
+        const todayRecords = store.healthRecords.filter(item => item.date === '2026-10-19').length;
+        const pendingEvents = store.riskEvents.filter(item => item.status !== '已完成').length;
+        const planRates = store.rehabPlans.map(item => item.completionRate);
+        const rehabCompletion = planRates.length ? (planRates.reduce((sum, v) => sum + v, 0) / planRates.length) : 0;
+        const newPatients = store.patients.filter(item => item.archiveDate && item.archiveDate.startsWith('2026-10')).length || 8;
+        return {
+          totalPatients,
+          openFollowUps,
+          todayRecords,
+          pendingEvents,
+          rehabCompletion: Number(rehabCompletion.toFixed(1)),
+          newPatients
+        };
+      }
+
+      function setStatus(message) {
+        const toast = document.getElementById('globalToast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(setStatus.timer);
+        setStatus.timer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+
+      function renderApp() {
+        const route = location.hash.replace(/^#/, '') || '/home';
+        const page = routeMeta[route] ? route : '/home';
+        const doc = document.getElementById('app');
+        doc.innerHTML = `
+          <div class="page-shell">
+            <header class="sticky top-0 z-30 mb-5">
+              <div class="glass mx-auto flex max-w-6xl flex-col gap-4 rounded-2xl border border-slate-200/70 px-4 py-3 shadow-soft md:flex-row md:items-center md:justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-medical-700 text-lg font-bold text-white">心</div>
+                  <div>
+                    <div class="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">CVD CARE</div>
+                    <h1 class="text-base font-bold text-slate-800">自我管理数字平台</h1>
+                  </div>
+                </div>
+                <nav class="flex flex-wrap gap-2 text-sm font-medium text-slate-600">
+                  ${NAV_ITEMS.map(item => `
+                    <a href="#${item.path}" class="nav-link rounded-full px-3 py-1.5 ${page === item.path ? 'active' : 'hover:text-medical-700'}">${item.label}</a>
+                  `).join('')}
+                </nav>
+              </div>
+            </header>
+            <div id="contentArea">
+              ${renderPage(page)}
+            </div>
+          </div>
+          <div id="globalToast" class="toast fixed bottom-6 right-6 max-w-sm rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-2xl"></div>
+        `;
+
+        bindPageInteractions();
+      }
+
+      function renderPage(page) {
+        switch (page) {
+          case '/patients': return renderPatientsPage();
+          case '/health': return renderHealthPage();
+          case '/plans': return renderPlansPage();
+          case '/followups': return renderFollowUpsPage();
+          case '/events': return renderEventsPage();
+          case '/education': return renderEducationPage();
+          case '/ai': return renderAiPage();
+          case '/profiles': return renderProfilesPage();
+          case '/dce': return renderDcePage();
+          case '/system': return renderSystemPage();
+          default: return renderHomePage();
+        }
+      }
+
+      function statusPillClass(status) {
+        const map = {
+          '稳定': 'bg-emerald-100 text-emerald-700',
+          '观察中': 'bg-warn-100 text-warn-700',
+          '关注中': 'bg-sky-100 text-sky-700',
+          '待复诊': 'bg-risk-100 text-risk-700',
+          '已完成': 'bg-emerald-100 text-emerald-700',
+          '待随访': 'bg-amber-100 text-amber-700',
+          '已延期': 'bg-rose-100 text-rose-700',
+          '待评估': 'bg-slate-200 text-slate-700',
+          '待联系': 'bg-warn-100 text-warn-700',
+          '处理中': 'bg-sky-100 text-sky-700',
+          '已完成事件': 'bg-emerald-100 text-emerald-700',
+          '常规管理': 'bg-sky-100 text-sky-700',
+          '重点关注': 'bg-risk-100 text-risk-700'
+        };
+        return map[status] || 'bg-slate-100 text-slate-700';
+      }
+
+      function renderHomePage() {
+        const store = getStore();
+        const stats = getDashboardStats();
+        const patientLevelCounts = store.patients.reduce((acc, patient) => {
+          acc[patient.managementLevel] = (acc[patient.managementLevel] || 0) + 1;
+          return acc;
+        }, {});
+        const records7 = store.healthRecords.filter(r => r.date >= '2026-10-13' && r.date <= '2026-10-19');
+        const bloodPressureTrend = ['2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19']
+          .map(date => {
+            const dayRecords = records7.filter(r => r.date === date);
+            const group = dayRecords.length ? dayRecords.reduce((sum, item) => sum + item.systolic, 0) / dayRecords.length : 0;
+            return { date, value: Number(group.toFixed(0)) || 0 };
+          });
+        const allTasks = store.rehabTasks.filter(t => t.status === '待完成').slice(0, 5);
+        const recentEvents = store.riskEvents.slice(0, 5);
+
+        const cards = [
+          { title: '管理患者总数', value: stats.totalPatients, route: '/patients', accent: 'bg-emerald-100 text-emerald-700', icon: '👥' },
+          { title: '今日待随访', value: stats.openFollowUps, route: '/followups', accent: 'bg-sky-100 text-sky-700', icon: '📞' },
+          { title: '今日健康记录', value: stats.todayRecords, route: '/health', accent: 'bg-violet-100 text-violet-700', icon: '📊' },
+          { title: '待处理事件', value: stats.pendingEvents, route: '/events', accent: 'bg-risk-100 text-risk-700', icon: '⚠️' },
+          { title: '康复计划完成率', value: `${stats.rehabCompletion}%`, route: '/plans', accent: 'bg-amber-100 text-amber-700', icon: '✅' },
+          { title: '本周新增患者', value: stats.newPatients, route: '/patients', accent: 'bg-medical-100 text-medical-700', icon: '🩺' }
+        ];
+
+        return `
+          <section class="mb-10 rounded-[28px] bg-gradient-to-br from-slate-900 via-slate-800 to-medical-900 px-5 py-7 text-white shadow-soft md:px-8 md:py-10">
+            <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-sky-100">
+              <span class="badge-dot bg-emerald-400"></span>
+              研究原型｜模拟数据｜非临床诊疗系统
+            </div>
+            <div class="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+              <div>
+                <h2 class="max-w-xl text-3xl font-black leading-tight md:text-5xl">护理研究原型工作台</h2>
+                <p class="mt-4 max-w-xl text-sm leading-7 text-slate-200 md:text-base">${DEMO_NOTICE}</p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                  <button data-route="/patients" class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">查看患者列表</button>
+                  <button data-route="/health" class="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10">健康数据中心</button>
+                </div>
+              </div>
+              <div class="rounded-[30px] border border-white/10 bg-white/5 p-4 shadow-soft">
+                <div class="mb-4 flex items-center justify-between">
+                  <span class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">平台概览</span>
+                  <span class="rounded-full bg-emerald-400/15 px-2 py-1 text-[10px] font-semibold text-emerald-200">运行中</span>
+                </div>
+                <div class="space-y-3">
+                  <div class="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-3">
+                    <div class="text-xs font-semibold text-sky-100">数据层</div>
+                    <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
+                      <span class="rounded-full bg-white/10 px-2 py-1">患者档案</span>
+                      <span class="rounded-full bg-white/10 px-2 py-1">健康记录</span>
+                      <span class="rounded-full bg-white/10 px-2 py-1">随访安排</span>
+                    </div>
+                  </div>
+                  <div class="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-3">
+                    <div class="text-xs font-semibold text-emerald-100">应用层</div>
+                    <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
+                      <span class="rounded-full bg-white/10 px-2 py-1">首页工作台</span>
+                      <span class="rounded-full bg-white/10 px-2 py-1">问答原型</span>
+                      <span class="rounded-full bg-white/10 px-2 py-1">DCE演示</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="mb-8 grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+            ${cards.map(card => `
+              <button data-route="${card.route}" class="stat-card rounded-2xl border border-slate-200 bg-white/90 p-4 text-left shadow-soft ${card.accent}">
+                <div class="mb-2 flex items-center justify-between">
+                  <span class="text-2xl">${card.icon}</span>
+                  <span class="rounded-full bg-white/60 px-2 py-1 text-[10px] font-semibold">点击查看</span>
+                </div>
+                <div class="text-2xl font-black">${card.value}</div>
+                <div class="mt-1 text-xs font-medium opacity-80">${card.title}</div>
+              </button>
+            `).join('')}
+          </section>
+
+          <section class="mb-10 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Trend</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">近7天血压趋势</h3>
+                </div>
+                <button data-route="/health" class="soft-button">查看详细数据</button>
+              </div>
+              <div class="space-y-4">
+                ${bloodPressureTrend.map(item => `
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-xs text-slate-600"><span>${item.date.replace('2026-', '')}</span><span>${item.value} mmHg</span></div>
+                    <div class="h-2.5 rounded-full bg-slate-200"><div class="h-full rounded-full bg-gradient-to-r from-sky-500 via-medical-500 to-emerald-500" style="width:${Math.min(100, item.value / 180 * 100)}%"></div></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Distribution</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">患者管理等级分布</h3>
+                </div>
+              </div>
+              <div class="space-y-3">
+                ${Object.entries(patientLevelCounts).map(([level, count]) => `
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-sm text-slate-600">
+                      <span>${level}</span>
+                      <span>${count}人</span>
+                    </div>
+                    <div class="h-2.5 rounded-full bg-slate-200"><div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-500" style="width:${Math.min(100, count / 30 * 100)}%"></div></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+
+          <section class="mb-10 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Recent events</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">最近系统事件</h3>
+                </div>
+                <button data-route="/events" class="soft-button">进入事件管理</button>
+              </div>
+              <div class="space-y-3">
+                ${recentEvents.map(event => `
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="text-sm font-bold text-slate-800">${event.patientName}</div>
+                        <div class="text-xs text-slate-500">${event.eventType}</div>
+                      </div>
+                      <span class="status-chip ${statusPillClass(event.status)}">${event.status}</span>
+                    </div>
+                    <div class="mt-2 text-sm text-slate-600">${event.description}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Tasks</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">今日待办</h3>
+                </div>
+                <button data-route="/plans" class="soft-button">查看计划</button>
+              </div>
+              <div class="space-y-3">
+                ${allTasks.length ? allTasks.map((task, idx) => `
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="flex items-center justify-between">
+                      <div class="text-sm font-bold text-slate-800">${idx + 1}. ${task.taskName}</div>
+                      <span class="status-chip ${statusPillClass(task.status)}">${task.status}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-slate-500">患者：${getPatientById(task.patientId)?.name || '模拟患者'}</div>
+                  </div>
+                `).join('') : '<div class="text-sm text-slate-500">暂无待办事项</div>'}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderPatientsPage() {
+        const store = getStore();
+        const query = (document.getElementById('patientQuery') || {}).value || '';
+        const level = (document.getElementById('patientLevel') || {}).value || 'all';
+        const statusFilter = (document.getElementById('patientStatus') || {}).value || 'all';
+        const sortBy = (document.getElementById('patientSort') || {}).value || 'id';
+
+        let patients = [...store.patients];
+        const q = query.trim().toLowerCase();
+        if (q) {
+          patients = patients.filter(item => item.id.toLowerCase().includes(q) || item.name.toLowerCase().includes(q));
+        }
+        if (level !== 'all') patients = patients.filter(item => item.managementLevel === level);
+        if (statusFilter !== 'all') patients = patients.filter(item => item.status === statusFilter);
+        patients.sort((a, b) => {
+          if (sortBy === 'latestVisit') return new Date(b.archiveDate) - new Date(a.archiveDate);
+          if (sortBy === 'name') return a.name.localeCompare(b.name, 'zh-CN');
+          return a.id.localeCompare(b.id);
+        });
+
+        const pageSize = 8;
+        const currentPage = Number((document.getElementById('patientPage') || {}).dataset.page || 1);
+        const totalPages = Math.max(1, Math.ceil(patients.length / pageSize));
+        const paged = patients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+        return `
+          <section class="panel p-5 md:p-7">
+            <div class="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div class="label">Patient list</div>
+                <h3 class="mt-1 text-2xl font-bold text-slate-800">患者列表</h3>
+              </div>
+              <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">共 ${patients.length} 名模拟患者</div>
+            </div>
+
+            <div class="mb-5 grid gap-3 md:grid-cols-4">
+              <input id="patientQuery" value="${escapeHtml(q)}" placeholder="搜索编号/姓名" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
+              <select id="patientLevel" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                <option value="all">全部等级</option>
+                <option value="常规管理" ${level === '常规管理' ? 'selected' : ''}>常规管理</option>
+                <option value="重点关注" ${level === '重点关注' ? 'selected' : ''}>重点关注</option>
+              </select>
+              <select id="patientStatus" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                <option value="all">全部状态</option>
+                <option value="稳定" ${statusFilter === '稳定' ? 'selected' : ''}>稳定</option>
+                <option value="观察中" ${statusFilter === '观察中' ? 'selected' : ''}>观察中</option>
+                <option value="关注中" ${statusFilter === '关注中' ? 'selected' : ''}>关注中</option>
+                <option value="待复诊" ${statusFilter === '待复诊' ? 'selected' : ''}>待复诊</option>
+              </select>
+              <select id="patientSort" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                <option value="id" ${sortBy === 'id' ? 'selected' : ''}>按编号</option>
+                <option value="name" ${sortBy === 'name' ? 'selected' : ''}>按姓名</option>
+                <option value="latestVisit" ${sortBy === 'latestVisit' ? 'selected' : ''}>按建档时间</option>
+              </select>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr class="bg-slate-50 text-sm text-slate-600">
+                    <th>患者编号</th>
+                    <th>姓名</th>
+                    <th>年龄</th>
+                    <th>性别</th>
+                    <th>主要疾病</th>
+                    <th>居住地区</th>
+                    <th>管理等级</th>
+                    <th>最近随访日期</th>
+                    <th>最近记录日期</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${paged.length ? paged.map(patient => {
+                    const latestFollowUp = getPatientFollowUps(patient.id).slice(-1)[0];
+                    const latestRecord = getPatientRecords(patient.id).slice(-1)[0];
+                    return `
+                      <tr class="hover:bg-slate-50">
+                        <td><button data-open-patient="${patient.id}" class="font-semibold text-medical-700 hover:underline">${patient.id}</button></td>
+                        <td><button data-open-patient="${patient.id}" class="font-bold text-slate-800 hover:underline">${patient.name}</button></td>
+                        <td>${patient.age}</td>
+                        <td>${patient.gender}</td>
+                        <td>${patient.diagnosis}</td>
+                        <td>${patient.region}</td>
+                        <td><span class="status-chip ${statusPillClass(patient.managementLevel)}">${patient.managementLevel}</span></td>
+                        <td>${latestFollowUp ? formatDate(latestFollowUp.planDate) : '—'}</td>
+                        <td>${latestRecord ? formatDate(latestRecord.date) : '—'}</td>
+                        <td><span class="status-chip ${statusPillClass(patient.status)}">${patient.status}</span></td>
+                      </tr>
+                    `;
+                  }).join('') : '<tr><td colspan="10" class="py-8 text-center text-slate-500">暂无匹配患者</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <div class="text-sm text-slate-600">第 ${currentPage}/${totalPages} 页</div>
+              <div class="flex gap-2">
+                <button data-patient-page="prev" class="soft-button" ${currentPage <= 1 ? 'disabled' : ''}>上一页</button>
+                <button data-patient-page="next" class="soft-button" ${currentPage >= totalPages ? 'disabled' : ''}>下一页</button>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderPatientDetail(patientId) {
+        const patient = getPatientById(patientId);
+        if (!patient) return `<div class="panel p-8 text-center text-slate-600">未找到患者详情</div>`;
+        const summary = getHealthSummary(patientId);
+        const recentTasks = getPatientTasks(patientId).slice(0, 4);
+        const history = getPatientFollowUps(patientId).slice(0, 3);
+        const events = getPatientEvents(patientId).slice(0, 4);
+
+        const detailCards = [
+          ['患者编号', patient.id],
+          ['姓名', patient.name],
+          ['年龄', `${patient.age}岁`],
+          ['性别', patient.gender],
+          ['诊断', patient.diagnosis],
+          ['治疗情况', patient.treatment],
+          ['建档日期', patient.archiveDate],
+          ['居住地区', patient.region],
+          ['照护者', patient.caregiver],
+          ['手机使用情况', patient.phoneUsage],
+          ['康复阶段', patient.stage],
+          ['管理等级', patient.managementLevel]
+        ];
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div class="label">Patient profile</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">${patient.name}（${patient.id}）</h3>
+                </div>
+                <div class="flex gap-2">
+                  <button data-route="/patients" class="soft-button">返回列表</button>
+                  <span class="status-chip ${statusPillClass(patient.status)}">${patient.status}</span>
+                </div>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                ${detailCards.map(([label, value]) => `
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="text-xs text-slate-500">${label}</div>
+                    <div class="mt-1 font-bold text-slate-800">${value}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="grid gap-6 xl:grid-cols-2">
+              <div class="panel p-5 md:p-7">
+                <div class="mb-4">
+                  <div class="label">Health data</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">健康数据概览</h3>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div class="rounded-2xl bg-medical-50 p-3"><div class="text-xs text-slate-500">最近血压</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.lastSystolic}/${summary.lastDiastolic}</div></div>
+                  <div class="rounded-2xl bg-sky-50 p-3"><div class="text-xs text-slate-500">最近心率</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.lastHeartRate}</div></div>
+                  <div class="rounded-2xl bg-emerald-50 p-3"><div class="text-xs text-slate-500">最近体重</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.lastWeight}kg</div></div>
+                  <div class="rounded-2xl bg-violet-50 p-3"><div class="text-xs text-slate-500">最近睡眠</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.lastSleep}h</div></div>
+                  <div class="rounded-2xl bg-amber-50 p-3"><div class="text-xs text-slate-500">最近步数</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.lastSteps}</div></div>
+                  <div class="rounded-2xl bg-emerald-50 p-3"><div class="text-xs text-slate-500">记录完整率</div><div class="mt-1 text-2xl font-black text-slate-800">${summary.completionRate}%</div></div>
+                </div>
+              </div>
+
+              <div class="panel p-5 md:p-7">
+                <div class="mb-4">
+                  <div class="label">Plan</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">康复计划</h3>
+                </div>
+                <div class="space-y-3">
+                  ${recentTasks.length ? recentTasks.map(task => `
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="font-bold text-slate-800">${task.taskName}</div>
+                        <span class="status-chip ${statusPillClass(task.status)}">${task.status}</span>
+                      </div>
+                      <div class="mt-1 text-sm text-slate-600">${task.description}</div>
+                    </div>
+                  `).join('') : '<div class="text-sm text-slate-500">暂无计划任务</div>'}
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-6 xl:grid-cols-2">
+              <div class="panel p-5 md:p-7">
+                <div class="mb-4">
+                  <div class="label">Follow-up</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">随访记录</h3>
+                </div>
+                <div class="space-y-3">
+                  ${history.length ? history.map(item => `
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="font-bold text-slate-800">${item.method}</div>
+                        <span class="status-chip ${statusPillClass(item.status)}">${item.status}</span>
+                      </div>
+                      <div class="mt-1 text-sm text-slate-600">${formatDate(item.planDate)} / ${item.result}</div>
+                    </div>
+                  `).join('') : '<div class="text-sm text-slate-500">暂无随访记录</div>'}
+                </div>
+              </div>
+
+              <div class="panel p-5 md:p-7">
+                <div class="mb-4">
+                  <div class="label">Risk</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">风险事件</h3>
+                </div>
+                <div class="space-y-3">
+                  ${events.length ? events.map(item => `
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="font-bold text-slate-800">${item.eventType}</div>
+                        <span class="status-chip ${statusPillClass(item.status)}">${item.status}</span>
+                      </div>
+                      <div class="mt-1 text-sm text-slate-600">${item.description}</div>
+                    </div>
+                  `).join('') : '<div class="text-sm text-slate-500">暂无风险事件</div>'}
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderHealthPage() {
+        const store = getStore();
+        const allPatients = store.patients;
+        const selectedPatient = (document.getElementById('healthPatientSelect') || {}).value || allPatients[0]?.id || '';
+        const selectedType = (document.getElementById('healthTypeFilter') || {}).value || 'all';
+        let records = store.healthRecords.filter(item => item.patientId === selectedPatient);
+        if (selectedType !== 'all') records = records.filter(item => item.type === selectedType);
+        records = records.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div class="label">Health records</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">健康数据中心</h3>
+                </div>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">浏览器本地存储仅用于演示</div>
+              </div>
+
+              <div class="grid gap-3 md:grid-cols-3">
+                <select id="healthPatientSelect" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                  ${allPatients.map(patient => `<option value="${patient.id}" ${selectedPatient === patient.id ? 'selected' : ''}>${patient.id} - ${patient.name}</option>`).join('')}
+                </select>
+                <select id="healthTypeFilter" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                  <option value="all" ${selectedType === 'all' ? 'selected' : ''}>全部分类</option>
+                  <option value="bloodPressure" ${selectedType === 'bloodPressure' ? 'selected' : ''}>血压</option>
+                  <option value="heartRate" ${selectedType === 'heartRate' ? 'selected' : ''}>心率</option>
+                  <option value="weight" ${selectedType === 'weight' ? 'selected' : ''}>体重</option>
+                  <option value="exercise" ${selectedType === 'exercise' ? 'selected' : ''}>运动</option>
+                  <option value="sleep" ${selectedType === 'sleep' ? 'selected' : ''}>睡眠</option>
+                  <option value="selfManagement" ${selectedType === 'selfManagement' ? 'selected' : ''}>自我管理</option>
+                </select>
+                <button id="newHealthRecord" class="rounded-xl bg-medical-700 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-800">新增记录</button>
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Record list</div>
+                  <h3 class="mt-1 text-xl font-bold text-slate-800">${getPatientById(selectedPatient)?.name || '患者'}的记录</h3>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr class="bg-slate-50 text-sm text-slate-600">
+                      <th>日期</th>
+                      <th>分类</th>
+                      <th>血压</th>
+                      <th>心率</th>
+                      <th>体重</th>
+                      <th>步数</th>
+                      <th>睡眠</th>
+                      <th>自我管理</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${records.length ? records.map(item => `
+                      <tr>
+                        <td>${formatDate(item.date)}</td>
+                        <td>${typeLabel(item.type)}</td>
+                        <td>${item.systolic ? `${item.systolic}/${item.diastolic}` : '—'}</td>
+                        <td>${item.heartRate || '—'}</td>
+                        <td>${item.weight ? `${item.weight}kg` : '—'}</td>
+                        <td>${item.steps || '—'}</td>
+                        <td>${item.sleepHours ? `${item.sleepHours}h` : '—'}</td>
+                        <td>${item.selfManagement || '—'}</td>
+                        <td><div class="flex gap-2"><button data-edit-health="${item.id}" class="soft-button">编辑</button><button data-delete-health="${item.id}" class="soft-button text-risk-700">删除</button></div></td>
+                      </tr>
+                    `).join('') : '<tr><td colspan="9" class="py-8 text-center text-slate-500">暂无健康数据</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7" id="healthFormPanel" style="display:none;">
+              <div class="mb-4">
+                <div class="label">Form</div>
+                <h3 class="mt-1 text-xl font-bold text-slate-800">新增/编辑健康记录</h3>
+              </div>
+              <form id="healthForm" class="grid gap-4 md:grid-cols-2">
+                <input type="hidden" id="healthRecordId" />
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">患者</label>
+                  <select id="healthFormPatient" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    ${allPatients.map(patient => `<option value="${patient.id}">${patient.id} - ${patient.name}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">日期</label>
+                  <input id="healthFormDate" type="date" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" required />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">分类</label>
+                  <select id="healthFormType" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    <option value="bloodPressure">血压</option>
+                    <option value="heartRate">心率</option>
+                    <option value="weight">体重</option>
+                    <option value="exercise">运动</option>
+                    <option value="sleep">睡眠</option>
+                    <option value="selfManagement">自我管理</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">自我管理</label>
+                  <select id="healthFormSelfManagement" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    <option value="良好">良好</option>
+                    <option value="一般">一般</option>
+                    <option value="积极">积极</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">收缩压(mmHg)</label>
+                  <input id="healthFormSystolic" type="number" step="1" min="60" max="220" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">舒张压(mmHg)</label>
+                  <input id="healthFormDiastolic" type="number" step="1" min="40" max="150" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">心率(次/分)</label>
+                  <input id="healthFormHeartRate" type="number" step="1" min="30" max="180" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">体重(kg)</label>
+                  <input id="healthFormWeight" type="number" step="0.1" min="30" max="200" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">步数</label>
+                  <input id="healthFormSteps" type="number" step="1" min="0" max="30000" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">睡眠(小时)</label>
+                  <input id="healthFormSleep" type="number" step="0.1" min="0" max="20" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="mb-1 block text-sm font-medium text-slate-700">备注</label>
+                  <textarea id="healthFormNote" rows="3" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" placeholder="如：连续观察、运动情况或自我管理描述"></textarea>
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-3">
+                  <button type="button" id="cancelHealthForm" class="soft-button">取消</button>
+                  <button type="submit" class="rounded-xl bg-medical-700 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-800">保存记录</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderPlansPage() {
+        const store = getStore();
+        const tasks = store.rehabTasks.slice();
+        const groups = {
+          today: tasks.filter(item => item.planDate === '2026-10-19'),
+          week: tasks.filter(item => item.planDate >= '2026-10-13' && item.planDate <= '2026-10-19'),
+          done: tasks.filter(item => item.status === '已完成'),
+          pending: tasks.filter(item => item.status === '待完成'),
+          history: tasks.slice(0, 8)
+        };
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-5 flex items-center justify-between">
+                <div>
+                  <div class="label">Rehab plan</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">康复计划管理</h3>
+                </div>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">示例内容：不用于自动诊疗</div>
+              </div>
+              <div class="grid gap-4 md:grid-cols-4">
+                ${[
+                  ['今日任务', groups.today.length],
+                  ['本周任务', groups.week.length],
+                  ['已完成', groups.done.length],
+                  ['待完成', groups.pending.length]
+                ].map(([label, count]) => `
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="text-xs text-slate-500">${label}</div>
+                    <div class="mt-2 text-3xl font-black text-slate-800">${count}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4">
+                <div class="label">Task list</div>
+                <h3 class="mt-1 text-xl font-bold text-slate-800">任务列表</h3>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr class="bg-slate-50 text-sm text-slate-600">
+                      <th>患者</th>
+                      <th>任务名称</th>
+                      <th>计划日期</th>
+                      <th>状态</th>
+                      <th>完成时间</th>
+                      <th>备注</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${tasks.map(task => `
+                      <tr>
+                        <td>${getPatientById(task.patientId)?.name || '模拟患者'}</td>
+                        <td>${task.taskName}</td>
+                        <td>${formatDate(task.planDate)}</td>
+                        <td><span class="status-chip ${statusPillClass(task.status)}">${task.status}</span></td>
+                        <td>${task.finishedAt ? formatDateTime(task.finishedAt) : '—'}</td>
+                        <td>${task.note}</td>
+                        <td><button data-mark-task="${task.id}" class="soft-button">记录完成情况</button></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderFollowUpsPage() {
+        const store = getStore();
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-5 flex items-center justify-between">
+                <div>
+                  <div class="label">Follow-up</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">随访管理</h3>
+                </div>
+                <button id="newFollowupBtn" class="rounded-xl bg-medical-700 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-800">新增随访</button>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr class="bg-slate-50 text-sm text-slate-600">
+                      <th>随访编号</th>
+                      <th>患者</th>
+                      <th>计划日期</th>
+                      <th>方式</th>
+                      <th>人员</th>
+                      <th>状态</th>
+                      <th>结果</th>
+                      <th>后续安排</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${store.followUps.map(item => `
+                      <tr>
+                        <td>${item.id.slice(-6)}</td>
+                        <td>${item.patientName}</td>
+                        <td>${formatDate(item.planDate)}</td>
+                        <td>${item.method}</td>
+                        <td>${item.staff}</td>
+                        <td><span class="status-chip ${statusPillClass(item.status)}">${item.status}</span></td>
+                        <td>${item.result}</td>
+                        <td>${item.nextPlan}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7" id="followupFormPanel" style="display:none;">
+              <div class="mb-4">
+                <div class="label">New follow-up</div>
+                <h3 class="mt-1 text-xl font-bold text-slate-800">新增随访记录</h3>
+              </div>
+              <form id="followUpForm" class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">患者</label>
+                  <select id="followPatient" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    ${store.patients.map(patient => `<option value="${patient.id}">${patient.id} - ${patient.name}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">随访方式</label>
+                  <select id="followMethod" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    <option value="电话随访">电话随访</option>
+                    <option value="门诊复诊">门诊复诊</option>
+                    <option value="微信随访">微信随访</option>
+                    <option value="视频随访">视频随访</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">随访日期</label>
+                  <input id="followDate" type="date" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">随访人员</label>
+                  <input id="followStaff" value="社区护士A" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="mb-1 block text-sm font-medium text-slate-700">近期自我管理情况</label>
+                  <textarea id="followSelfManagement" rows="3" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" placeholder="患者本周活动、饮食、服药及复诊情况"></textarea>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="mb-1 block text-sm font-medium text-slate-700">患者提出的问题</label>
+                  <textarea id="followQuestion" rows="3" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" placeholder="患者关心的内容"></textarea>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">是否需要进一步联系医护人员</label>
+                  <select id="followNeedContact" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    <option value="否">否</option>
+                    <option value="是">是</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">后续安排</label>
+                  <input id="followNextPlan" value="继续观察" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">下次随访日期</label>
+                  <input id="followNextDate" type="date" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">备注</label>
+                  <input id="followNote" value="模拟记录" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-3">
+                  <button type="button" id="cancelFollowup" class="soft-button">取消</button>
+                  <button type="submit" class="rounded-xl bg-medical-700 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-800">保存随访</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderEventsPage() {
+        const store = getStore();
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-5 flex items-center justify-between">
+                <div>
+                  <div class="label">Risk events</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">风险事件管理</h3>
+                </div>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">医学安全提示：不直接诊断</div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr class="bg-slate-50 text-sm text-slate-600">
+                      <th>事件编号</th>
+                      <th>患者</th>
+                      <th>类型</th>
+                      <th>时间</th>
+                      <th>状态</th>
+                      <th>处理人员</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${store.riskEvents.map(event => `
+                      <tr>
+                        <td>${event.id.slice(-6)}</td>
+                        <td>${event.patientName}</td>
+                        <td>${event.eventType}</td>
+                        <td>${formatDateTime(event.eventTime)}</td>
+                        <td><span class="status-chip ${statusPillClass(event.status)}">${event.status}</span></td>
+                        <td>${event.handler}</td>
+                        <td><button data-open-event="${event.id}" class="soft-button">查看详情</button></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderEducationPage() {
+        const store = getStore();
+        const selectedId = (document.getElementById('educationArticleId') || {}).value || store.educationArticles[0]?.id || '';
+        const article = store.educationArticles.find(item => item.id === selectedId) || store.educationArticles[0];
+
+        return `
+          <section class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4">
+                <div class="label">Knowledge</div>
+                <h3 class="mt-1 text-2xl font-bold text-slate-800">健康教育</h3>
+              </div>
+              <div class="space-y-3">
+                ${store.educationArticles.map(item => `
+                  <button data-article="${item.id}" class="w-full rounded-2xl border ${article && article.id === item.id ? 'border-medical-300 bg-medical-50' : 'border-slate-200 bg-slate-50'} p-3 text-left">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="text-sm font-bold text-slate-800">${item.title}</div>
+                        <div class="mt-1 text-xs text-slate-500">${item.category}</div>
+                      </div>
+                      <span class="status-chip ${statusPillClass(item.status)}">${item.status}</span>
+                    </div>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7">
+              ${article ? `
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="label">Article detail</div>
+                    <h3 class="mt-1 text-2xl font-bold text-slate-800">${article.title}</h3>
+                  </div>
+                  <span class="status-chip ${statusPillClass(article.status)}">${article.status}</span>
+                </div>
+                <div class="space-y-4 text-sm leading-7 text-slate-700">
+                  <div><span class="font-semibold text-slate-800">分类：</span>${article.category}</div>
+                  <div><span class="font-semibold text-slate-800">适用人群：</span>${article.audience}</div>
+                  <div><span class="font-semibold text-slate-800">正文：</span>${article.content}</div>
+                  <div><span class="font-semibold text-slate-800">管理建议：</span>${article.suggestion}</div>
+                  <div><span class="font-semibold text-slate-800">注意事项：</span>${article.caution}</div>
+                  <div><span class="font-semibold text-slate-800">参考文献：</span>${article.sourceTitle || '待补充权威来源'}</div>
+                  <div><span class="font-semibold text-slate-800">来源链接：</span>${article.sourceUrl ? `<a href="${article.sourceUrl}" target="_blank" rel="noreferrer" class="text-medical-700 underline">${article.sourceUrl || '待补充权威来源'}</a>` : '待补充权威来源'}</div>
+                  <div><span class="font-semibold text-slate-800">更新时间：</span>${formatDate(article.updatedAt)}</div>
+                </div>
+              ` : '<div class="text-slate-500">暂无文章</div>'}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderAiPage() {
+        const store = getStore();
+        const question = (document.getElementById('aiQuestionInput') || {}).value || '';
+        const history = store.qaKnowledgeBase.slice(0, 6);
+        const answer = (document.getElementById('aiAnswerBlock') || {}).dataset.answer || '';
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4">
+                <div class="label">AI demo</div>
+                <h3 class="mt-1 text-2xl font-bold text-slate-800">AI问答演示</h3>
+              </div>
+              <form id="aiForm" class="space-y-4">
+                <div class="flex flex-col gap-3 md:flex-row">
+                  <input id="aiQuestionInput" value="${escapeHtml(question)}" placeholder="请输入问题，例如：每日运动应该注意什么？" class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+                  <button type="submit" class="rounded-xl bg-medical-700 px-5 py-2 text-sm font-semibold text-white hover:bg-medical-800">提交问题</button>
+                  <button type="button" id="clearAiQuestion" class="soft-button">清空</button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  ${store.qaKnowledgeBase.slice(0, 6).map(item => `
+                    <button type="button" data-ai-suggestion="${escapeHtml(item.question)}" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100">${item.question}</button>
+                  `).join('')}
+                </div>
+              </form>
+            </div>
+
+            <div class="panel p-5 md:p-7" id="aiAnswerBlock" data-answer="${escapeHtml(answer)}">
+              <div class="mb-3 label">Response</div>
+              <div class="text-sm leading-7 text-slate-700">
+                ${answer ? answer : '请提交一个问题，查看本地预设问答结果。' }
+              </div>
+            </div>
+
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 label">History</div>
+              <div class="space-y-3">
+                ${history.map(item => `
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="text-sm font-bold text-slate-800">Q: ${item.question}</div>
+                    <div class="mt-1 text-sm text-slate-600">A: ${item.answer}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderProfilesPage() {
+        const store = getStore();
+        const selected = (document.getElementById('profileType') || {}).value || '数字使用困难型';
+        const profiles = store.patientProfiles.filter(item => item.type === selected);
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">Patient profile</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">患者画像</h3>
+                </div>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">演示分类/研究假设</div>
+              </div>
+              <select id="profileType" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                ${['数字使用困难型', '经济敏感型', '家庭支持不足型', '数字使用熟练型', '医护信任偏好型'].map(type => `<option value="${type}" ${selected === type ? 'selected' : ''}>${type}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              ${profiles.map(item => `
+                <div class="panel p-5">
+                  <div class="mb-3 flex items-center justify-between">
+                    <div class="text-lg font-bold text-slate-800">${item.title}</div>
+                    <span class="status-chip ${statusPillClass('重点关注')}">${item.type}</span>
+                  </div>
+                  <div class="space-y-2 text-sm text-slate-700">
+                    <div><span class="font-semibold">设备使用：</span>${item.device}</div>
+                    <div><span class="font-semibold">家庭照护：</span>${item.familyCare}</div>
+                    <div><span class="font-semibold">费用关注：</span>${item.costs}</div>
+                    <div><span class="font-semibold">康复困难：</span>${item.challenge}</div>
+                    <div><span class="font-semibold">可能支持：</span>${item.support}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderDcePage() {
+        const store = getStore();
+        const q = (document.getElementById('dceIndex') || {}).value || '0';
+        const index = Number(q) || 0;
+        const question = store.dceQuestions[index];
+        const progress = ((index + 1) / store.dceQuestions.length) * 100;
+        const chosen = (document.getElementById('dceAnswerValue') || {}).value || '';
+
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <div class="label">DCE demo</div>
+                  <h3 class="mt-1 text-2xl font-bold text-slate-800">服务方案偏好选择</h3>
+                </div>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">演示选择题，不用于正式研究数据收集</div>
+              </div>
+              <div class="mb-4">
+                <div class="mb-2 flex items-center justify-between text-sm text-slate-600"><span>题目 ${index + 1}/${store.dceQuestions.length}</span><span>${Math.round(progress)}%</span></div>
+                <div class="h-2.5 rounded-full bg-slate-200"><div class="h-full rounded-full bg-gradient-to-r from-medical-500 to-emerald-500" style="width:${progress}%"></div></div>
+              </div>
+              <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
+                <div class="text-lg font-bold text-slate-800">${question.question}</div>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                  ${question.options.map((option, optionIndex) => `
+                    <button type="button" data-dce-choice="${option.label}" class="rounded-2xl border ${chosen === option.label ? 'border-medical-300 bg-medical-50' : 'border-slate-200 bg-slate-50'} p-4 text-left">
+                      <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">${option.label}</div>
+                      <div class="mt-2 text-base font-bold text-slate-800">${option.description}</div>
+                    </button>
+                  `).join('')}
+                </div>
+                <div class="mt-4 flex gap-3">
+                  <button type="button" data-dce-nav="prev" class="soft-button">上一题</button>
+                  <button type="button" data-dce-nav="next" class="rounded-xl bg-medical-700 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-800">下一题</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderSystemPage() {
+        return `
+          <section class="space-y-6">
+            <div class="panel p-5 md:p-7">
+              <div class="mb-4">
+                <div class="label">System statement</div>
+                <h3 class="mt-1 text-2xl font-bold text-slate-800">系统说明</h3>
+              </div>
+              <div class="space-y-4 text-sm leading-7 text-slate-700">
+                <p>${DEMO_NOTICE}</p>
+                <p>本原型使用浏览器 localStorage 进行模拟数据持久化，便于在 GitHub Pages 上直接运行。浏览器本地存储不适用于正式患者数据的安全存储。</p>
+                <p>本版本不接入真实AI服务、不接入数据库、不要求登录，也不使用真实患者姓名或身份信息。</p>
+                <p>所有健康数据、风险事件和DCE题目仅作界面演示和交互测试，不能用于真实临床诊疗或正式研究结论。</p>
+                <p>页面保留可点击的研究原型路径，便于在桌面和移动端进行演示与测试。</p>
+                <button id="resetDemoData" class="rounded-xl bg-risk-500 px-4 py-2 text-sm font-semibold text-white hover:bg-risk-600">恢复初始模拟数据</button>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function typeLabel(type) {
+        const map = {
+          bloodPressure: '血压',
+          heartRate: '心率',
+          weight: '体重',
+          exercise: '运动',
+          sleep: '睡眠',
+          selfManagement: '自我管理'
+        };
+        return map[type] || '其他';
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function bindPageInteractions() {
+        document.querySelectorAll('[data-route]').forEach(el => {
+          el.addEventListener('click', () => {
+            const route = el.getAttribute('data-route');
+            if (route) {
+              location.hash = route;
+            }
+          });
+        });
+
+        document.querySelectorAll('[data-open-patient]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const patientId = btn.getAttribute('data-open-patient');
+            location.hash = `/patients/${patientId}`;
+          });
+        });
+
+        document.querySelectorAll('[data-patient-page]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            let currentPage = Number((document.getElementById('patientPage') || {}).dataset.page || 1);
+            const direction = btn.getAttribute('data-patient-page');
+            if (direction === 'next') currentPage += 1; else if (direction === 'prev') currentPage -= 1;
+            const pageBox = document.getElementById('patientPage');
+            if (!pageBox) {
+              const newPage = document.createElement('div');
+              newPage.id = 'patientPage';
+              newPage.dataset.page = String(currentPage);
+            }
+            document.getElementById('patientPage')?.setAttribute('data-page', String(currentPage));
+            renderApp();
+          });
+        });
+
+        const patientQuery = document.getElementById('patientQuery');
+        if (patientQuery) {
+          patientQuery.addEventListener('input', () => renderApp());
+        }
+        const patientLevel = document.getElementById('patientLevel');
+        if (patientLevel) patientLevel.addEventListener('change', () => renderApp());
+        const patientStatus = document.getElementById('patientStatus');
+        if (patientStatus) patientStatus.addEventListener('change', () => renderApp());
+        const patientSort = document.getElementById('patientSort');
+        if (patientSort) patientSort.addEventListener('change', () => renderApp());
+
+        const healthPatientSelect = document.getElementById('healthPatientSelect');
+        if (healthPatientSelect) healthPatientSelect.addEventListener('change', () => renderApp());
+        const healthTypeFilter = document.getElementById('healthTypeFilter');
+        if (healthTypeFilter) healthTypeFilter.addEventListener('change', () => renderApp());
+
+        const newHealthBtn = document.getElementById('newHealthRecord');
+        if (newHealthBtn) {
+          newHealthBtn.addEventListener('click', () => {
+            const panel = document.getElementById('healthFormPanel');
+            if (panel) panel.style.display = 'block';
+            document.getElementById('healthForm').reset();
+            document.getElementById('healthFormPatient').value = document.getElementById('healthPatientSelect')?.value || '';
+          });
+        }
+
+        const cancelHealth = document.getElementById('cancelHealthForm');
+        if (cancelHealth) {
+          cancelHealth.addEventListener('click', () => {
+            const panel = document.getElementById('healthFormPanel');
+            if (panel) panel.style.display = 'none';
+          });
+        }
+
+        const healthForm = document.getElementById('healthForm');
+        if (healthForm) {
+          healthForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const store = getStore();
+            const patientId = document.getElementById('healthFormPatient').value;
+            const date = document.getElementById('healthFormDate').value;
+            const type = document.getElementById('healthFormType').value;
+            const systolic = Number(document.getElementById('healthFormSystolic').value || 0);
+            const diastolic = Number(document.getElementById('healthFormDiastolic').value || 0);
+            const heartRate = Number(document.getElementById('healthFormHeartRate').value || 0);
+            const weight = Number(document.getElementById('healthFormWeight').value || 0);
+            const steps = Number(document.getElementById('healthFormSteps').value || 0);
+            const sleepHours = Number(document.getElementById('healthFormSleep').value || 0);
+            const selfManagement = document.getElementById('healthFormSelfManagement').value;
+            const note = document.getElementById('healthFormNote').value;
+            if (!patientId || !date) return setStatus('患者和测量日期不能为空');
+            if (type === 'bloodPressure' && (!Number.isFinite(systolic) || !Number.isFinite(diastolic) || systolic <= 0 || diastolic <= 0)) return setStatus('血压必须为合理数值');
+            if (type === 'heartRate' && (!Number.isFinite(heartRate) || heartRate <= 0)) return setStatus('心率必须为合理数值');
+            if (type === 'weight' && (!Number.isFinite(weight) || weight <= 0)) return setStatus('体重必须为合理数值');
+            if (type === 'exercise' && (!Number.isFinite(steps) || steps < 0)) return setStatus('步数必须为非负数');
+            if (type === 'sleep' && (!Number.isFinite(sleepHours) || sleepHours < 0)) return setStatus('睡眠时间需为合理数值');
+            const record = {
+              id: document.getElementById('healthRecordId').value || uid('record'),
+              patientId,
+              date,
+              type,
+              systolic: systolic || 0,
+              diastolic: diastolic || 0,
+              heartRate: heartRate || 0,
+              weight: weight || 0,
+              steps: steps || 0,
+              sleepHours: sleepHours || 0,
+              selfManagement,
+              note,
+              isDemo: true
+            };
+            const idx = store.healthRecords.findIndex(item => item.id === record.id);
+            if (idx >= 0) store.healthRecords[idx] = record; else store.healthRecords.push(record);
+            writeStore(store);
+            setStatus('健康记录已保存');
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll('[data-edit-health]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const recordId = btn.getAttribute('data-edit-health');
+            const store = getStore();
+            const record = store.healthRecords.find(item => item.id === recordId);
+            if (!record) return;
+            document.getElementById('healthRecordId').value = record.id;
+            document.getElementById('healthFormPatient').value = record.patientId;
+            document.getElementById('healthFormDate').value = record.date;
+            document.getElementById('healthFormType').value = record.type;
+            document.getElementById('healthFormSelfManagement').value = record.selfManagement || '良好';
+            document.getElementById('healthFormSystolic').value = record.systolic || '';
+            document.getElementById('healthFormDiastolic').value = record.diastolic || '';
+            document.getElementById('healthFormHeartRate').value = record.heartRate || '';
+            document.getElementById('healthFormWeight').value = record.weight || '';
+            document.getElementById('healthFormSteps').value = record.steps || '';
+            document.getElementById('healthFormSleep').value = record.sleepHours || '';
+            document.getElementById('healthFormNote').value = record.note || '';
+            document.getElementById('healthFormPanel').style.display = 'block';
+          });
+        });
+
+        document.querySelectorAll('[data-delete-health]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (!confirm('确认删除该健康记录吗？')) return;
+            const recordId = btn.getAttribute('data-delete-health');
+            const store = getStore();
+            store.healthRecords = store.healthRecords.filter(item => item.id !== recordId);
+            writeStore(store);
+            setStatus('健康记录已删除');
+            renderApp();
+          });
+        });
+
+        const newFollowupBtn = document.getElementById('newFollowupBtn');
+        if (newFollowupBtn) {
+          newFollowupBtn.addEventListener('click', () => {
+            document.getElementById('followupFormPanel').style.display = 'block';
+          });
+        }
+
+        const cancelFollowup = document.getElementById('cancelFollowup');
+        if (cancelFollowup) {
+          cancelFollowup.addEventListener('click', () => {
+            document.getElementById('followupFormPanel').style.display = 'none';
+          });
+        }
+
+        const followUpForm = document.getElementById('followUpForm');
+        if (followUpForm) {
+          followUpForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const store = getStore();
+            const patientId = document.getElementById('followPatient').value;
+            const patient = getPatientById(patientId);
+            const data = {
+              id: uid('follow'),
+              patientId,
+              patientName: patient?.name || '模拟患者',
+              planDate: document.getElementById('followDate').value,
+              actualDate: document.getElementById('followDate').value,
+              method: document.getElementById('followMethod').value,
+              staff: document.getElementById('followStaff').value,
+              status: '待随访',
+              result: document.getElementById('followSelfManagement').value || '已完成初步沟通',
+              nextPlan: document.getElementById('followNextPlan').value,
+              note: document.getElementById('followNote').value,
+              isDemo: true
+            };
+            store.followUps.push(data);
+            writeStore(store);
+            setStatus('随访记录已新增');
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll('[data-open-event]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const eventId = btn.getAttribute('data-open-event');
+            const store = getStore();
+            const item = store.riskEvents.find(event => event.id === eventId);
+            if (!item) return;
+            const note = prompt(`处理记录：\n${item.description}\n\n状态（待评估/待联系/处理中/已完成）`, item.processNote || '已登记');
+            if (note == null) return;
+            item.processNote = note;
+            item.status = '已完成';
+            item.handler = '护士组';
+            item.processedAt = new Date().toISOString();
+            writeStore(store);
+            setStatus('风险事件已更新');
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll('[data-article]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-article');
+            localStorage.setItem('cvd-article-select', id);
+            renderApp();
+          });
+        });
+
+        const articleId = localStorage.getItem('cvd-article-select');
+        if (articleId) {
+          const article = document.querySelector(`button[data-article="${articleId}"]`);
+          if (article) article.click();
+        }
+
+        document.querySelectorAll('[data-ai-suggestion]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const val = btn.getAttribute('data-ai-suggestion');
+            const input = document.getElementById('aiQuestionInput');
+            if (input) input.value = val;
+          });
+        });
+
+        const aiForm = document.getElementById('aiForm');
+        if (aiForm) {
+          aiForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const input = document.getElementById('aiQuestionInput');
+            const value = (input?.value || '').trim();
+            if (!value) return setStatus('请输入问题');
+            const store = getStore();
+            const matched = store.qaKnowledgeBase.find(item => item.question.toLowerCase().includes(value.toLowerCase()) || value.toLowerCase().includes(item.question.toLowerCase().slice(0, 8)));
+            const answerText = matched ? `Q: ${matched.question}\nA: ${matched.answer}\n\n适用范围：${matched.scope}\n注意事项：${matched.caution}\n来源：${matched.sourceName}\n链接：${matched.sourceUrl || '待补充'}\n审核状态：${matched.status}` : '当前演示知识库未找到经过审核的相关回答，请咨询专业医护人员。';
+            const answerBlock = document.getElementById('aiAnswerBlock');
+            if (answerBlock) {
+              answerBlock.dataset.answer = answerText;
+              answerBlock.innerHTML = `<div class="mb-3 label">Response</div><div class="text-sm leading-7 text-slate-700">${escapeHtml(answerText).replace(/\n/g, '<br>')}</div>`;
+            }
+            setStatus('问答已生成');
+          });
+        }
+
+        const clearAiQuestion = document.getElementById('clearAiQuestion');
+        if (clearAiQuestion) {
+          clearAiQuestion.addEventListener('click', () => {
+            const input = document.getElementById('aiQuestionInput');
+            if (input) input.value = '';
+          });
+        }
+
+        const profileType = document.getElementById('profileType');
+        if (profileType) profileType.addEventListener('change', () => renderApp());
+
+        document.querySelectorAll('[data-dce-choice]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const value = btn.getAttribute('data-dce-choice');
+            const field = document.getElementById('dceAnswerValue');
+            if (field) field.value = value;
+            document.querySelectorAll('[data-dce-choice]').forEach(item => item.classList.remove('border-medical-300', 'bg-medical-50'));
+            btn.classList.add('border-medical-300', 'bg-medical-50');
+          });
+        });
+
+        const dceAnswerValue = document.createElement('input');
+        dceAnswerValue.type = 'hidden';
+        dceAnswerValue.id = 'dceAnswerValue';
+        dceAnswerValue.value = '方案A';
+        if (!document.getElementById('dceAnswerValue')) {
+          document.getElementById('dceAnswerValue')?.remove();
+        }
+
+        document.querySelectorAll('[data-dce-nav]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const current = Number((document.getElementById('dceIndex') || {}).value || 0);
+            const nav = btn.getAttribute('data-dce-nav');
+            const next = nav === 'next' ? current + 1 : current - 1;
+            const field = document.getElementById('dceIndex');
+            if (field) field.value = String(Math.min(Math.max(next, 0), 5));
+            renderApp();
+          });
+        });
+
+        const resetBtn = document.getElementById('resetDemoData');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            if (!confirm('确认恢复初始模拟数据？这会覆盖当前本地更改。')) return;
+            const fresh = buildDemoRecords();
+            writeStore(fresh);
+            setStatus('已恢复初始模拟数据');
+            renderApp();
+          });
+        }
+
+        const route = location.hash.replace(/^#/, '') || '/home';
+        if (route.startsWith('/patients/') && route.split('/').length > 2) {
+          const patientId = route.split('/')[2];
+          const patient = getPatientById(patientId);
+          if (patient) {
+            const patientPanel = document.createElement('div');
+            patientPanel.innerHTML = renderPatientDetail(patientId);
+            const oldContent = document.getElementById('contentArea');
+            oldContent.innerHTML = patientPanel.innerHTML;
+            bindPageInteractions();
+          }
+        }
+      }
+
+      window.addEventListener('hashchange', renderApp);
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!location.hash) location.hash = '/home';
+        renderApp();
+      });
     </script>
   </body>
 </html>
