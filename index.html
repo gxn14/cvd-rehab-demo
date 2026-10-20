@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>自我管理数字平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: { soft: "0 10px 30px rgba(15, 23, 42, 0.08)" },
+            colors: {
+              medical: { 50: "#eef8ff", 100: "#d9f0ff", 500: "#0f8ec7", 700: "#0d5d87", 900: "#15364d" },
+              care: { 50: "#f3f8f5", 100: "#dff3e9", 500: "#2e9d7a", 700: "#1f6f57" },
+              risk: { 50: "#fff5f5", 100: "#ffe3e3", 500: "#ef4444", 700: "#b91c1c" },
+              warn: { 50: "#fffaf0", 100: "#fef0c7", 500: "#f59e0b", 700: "#b45309" }
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(29, 78, 216, 0.18), transparent 18%),
+          radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 22%),
+          #f3f7fb;
+      }
+      .glass { background: rgba(255,255,255,0.82); backdrop-filter: blur(10px); }
+      .module-btn { border: 1px solid rgba(148,163,184,0.25); transition: all 0.2s ease; }
+      .module-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08); }
+      .badge-dot { width:11px; height:11px; border-radius:999px; display:inline-block; }
+      .flow-bar { position:relative; height:14px; background:linear-gradient(90deg, rgba(59,130,246,0.12), rgba(59,130,246,0.25)); border-radius:999px; }
+      .flow-bar::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(14,116,144,0.18), rgba(59,130,246,0.25), rgba(14,116,144,0.18)); border-radius:inherit; }
+      .choice-card.selected { border-color:#0f8ec7; box-shadow:0 18px 38px rgba(15, 142, 199, 0.18); background:linear-gradient(180deg, rgba(219,244,255,0.9), rgba(255,255,255,0.96)); }
+      .choice-card:not(.selected) { border-color: rgba(148,163,184,0.28); }
+      .toast { opacity:0; transform: translateY(12px); transition: all 0.25s ease; }
+      .toast.show { opacity:1; transform: translateY(0); }
+    </style>
+  </head>
+  <body>
+    <div class="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-10">
+      <header class="sticky top-0 z-20 mb-6">
+        <div class="glass mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-slate-200/70 px-4 py-3 shadow-soft">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-medical-700 text-lg font-bold text-white">心</div>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">CVD CARE</div>
+              <h1 class="text-base font-bold text-slate-800">自我管理数字平台</h1>
+            </div>
+          </div>
+          <nav class="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
+            <a href="#overview" class="hover:text-medical-700">平台概览</a>
+            <a href="#patient" class="hover:text-medical-700">患者端</a>
+            <a href="#doctor" class="hover:text-medical-700">医生端</a>
+            <a href="#dce" class="hover:text-medical-700">DCE 方案</a>
+          </nav>
+          <button class="rounded-full bg-medical-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-medical-700/20 hover:bg-medical-800">预览方案</button>
+        </div>
+      </header>
+
+      <section id="overview" class="mb-10 rounded-[28px] bg-gradient-to-br from-slate-900 via-slate-800 to-medical-900 px-5 py-7 text-white shadow-soft md:px-8 md:py-10">
+        <div class="grid items-center gap-8 lg:grid-cols-[1.3fr_1fr]">
+          <div>
+            <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-sky-100">
+              <span class="badge-dot bg-emerald-400"></span>
+              未来型数字服务示范平台
+            </div>
+            <h2 class="max-w-xl text-3xl font-black leading-tight md:text-5xl">
+              心血管疾病患者居家心脏康复<br />自我管理数字平台
+            </h2>
+            <p class="mt-4 max-w-lg text-sm leading-7 text-slate-200 md:text-base">
+              面向患者、医生与研究者，聚焦“管理-随访-风险预警-分层服务”闭环，
+              通过数字化工具提升居家康复依从性、优化医生工作流，并支撑 DCE 偏好调研与优先级决策。
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <button class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">患者端体验</button>
+              <button class="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10">研究服务视角</button>
+            </div>
+            <div class="mt-8 grid max-w-lg grid-cols-3 gap-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-sky-300">3</div><div class="mt-1 text-xs text-slate-200">服务层级</div></div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-emerald-300">12k+</div><div class="mt-1 text-xs text-slate-200">患者数据点</div></div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><div class="text-2xl font-black text-amber-300">24/7</div><div class="mt-1 text-xs text-slate-200">远程监测</div></div>
+            </div>
+          </div>
+
+          <div class="rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-soft">
+            <div class="mb-3 flex items-center justify-between px-2">
+              <span class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Architecture</span>
+              <span class="rounded-full bg-emerald-400/15 px-2 py-1 text-[10px] font-semibold text-emerald-200">运行中</span>
+            </div>
+            <div class="space-y-4">
+              <div class="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-3">
+                <div class="text-xs font-semibold text-sky-100">数据层</div>
+                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
+                  <span class="rounded-full bg-white/10 px-2 py-1">患者打卡</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">血压</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">血糖</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">运动</span>
+                </div>
+              </div>
+              <div class="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-3">
+                <div class="text-xs font-semibold text-emerald-100">服务层</div>
+                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
+                  <span class="rounded-full bg-white/10 px-2 py-1">风险评分</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">处方推荐</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">AI提醒</span>
+                </div>
+              </div>
+              <div class="rounded-2xl border border-violet-300/20 bg-violet-500/10 p-3">
+                <div class="text-xs font-semibold text-violet-100">应用层</div>
+                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-100">
+                  <span class="rounded-full bg-white/10 px-2 py-1">患者端</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">医生端</span>
+                  <span class="rounded-full bg-white/10 px-2 py-1">研究员端</span>
+                </div>
+              </div>
+              <div class="flow-bar"></div>
+              <div class="grid grid-cols-3 gap-2 text-center text-[11px] text-slate-200">
+                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-sky-200">患者打卡</div></div>
+                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-emerald-200">智能分析</div></div>
+                <div class="rounded-xl border border-white/10 bg-white/5 p-2"><div class="font-bold text-amber-200">医生预警</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-10 rounded-[30px] border border-slate-200 bg-white/80 p-5 shadow-soft md:p-7">
+        <div class="mb-6 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Patient Entry</div>
+            <h3 class="mt-1 text-2xl font-bold text-slate-800">患者端入口的三层演进</h3>
+          </div>
+          <div class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 md:block">电话短信 → 微信小程序 → App + 可穿戴</div>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-200 text-sm font-bold text-slate-700">1</span><span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">短信</span></div>
+            <div class="text-xl font-bold text-slate-800">电话短信</div>
+            <p class="mt-3 text-sm leading-6 text-slate-600">适合老年群体基础提醒，重点解决“提醒-复诊-服药”信息覆盖问题。</p>
+            <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-3 text-xs text-slate-500">发送：按时服药、复诊提醒、康复打卡提醒</div>
+          </div>
+          <div class="rounded-2xl border border-medical-200 bg-medical-50 p-4">
+            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-medical-100 text-sm font-bold text-medical-700">2</span><span class="rounded-full bg-medical-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-medical-700">微信</span></div>
+            <div class="text-xl font-bold text-slate-800">微信小程序</div>
+            <p class="mt-3 text-sm leading-6 text-slate-600">以“场景化服务”提供活动提醒、打卡记录和在线答疑，提高互动效率。</p>
+            <div class="mt-4 rounded-xl border border-dashed border-medical-200 bg-white p-3 text-xs text-medical-700">重点：门诊预约、运动提醒、心理支持、服务入口</div>
+          </div>
+          <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div class="mb-4 flex items-center justify-between"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700">3</span><span class="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700">App</span></div>
+            <div class="text-xl font-bold text-slate-800">App + 可穿戴</div>
+            <p class="mt-3 text-sm leading-6 text-slate-600">实现长期监测和个性化康复方案，结合心率、步数、血压、血糖数据进行持续管理。</p>
+            <div class="mt-4 rounded-xl border border-dashed border-emerald-200 bg-white p-3 text-xs text-emerald-700">重点：数据回传、风险预警、智能处方、运动进度</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="patient" class="mb-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Patient Dashboard</div>
+              <h3 class="mt-1 text-2xl font-bold text-slate-800">患者端看板</h3>
+            </div>
+            <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">今日状态：稳定</div>
+          </div>
+
+          <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg text-emerald-700">🏃</div><div class="text-base font-bold text-slate-800">运动康复</div><div class="mt-1 text-xs text-slate-500">计划与打卡</div></button>
+            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-lg text-sky-700">💊</div><div class="text-base font-bold text-slate-800">用药管理</div><div class="mt-1 text-xs text-slate-500">提醒与服药记录</div></button>
+            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-lg text-violet-700">🧠</div><div class="text-base font-bold text-slate-800">心理营养</div><div class="mt-1 text-xs text-slate-500">情绪与饮食</div></button>
+            <button class="module-btn rounded-2xl bg-white p-4 text-left"><div class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-lg text-amber-700">👨‍👩‍👧‍👦</div><div class="text-base font-bold text-slate-800">照护者培训</div><div class="mt-1 text-xs text-slate-500">家庭支持</div></button>
+          </div>
+
+          <div class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div class="mb-3 flex items-center justify-between"><div class="text-lg font-bold text-slate-800">今日运动打卡进度</div><div class="text-sm font-semibold text-medical-700">72%</div></div>
+              <div class="h-3 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-full w-[72%] rounded-full bg-gradient-to-r from-emerald-500 via-medical-500 to-sky-500"></div></div>
+              <div class="mt-4 flex items-center justify-between text-sm text-slate-600"><span>已完成：20/28 分钟</span><span>目标：步行 30 分钟</span></div>
+              <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-xl bg-white p-3"><div class="text-xs text-slate-500">血压</div><div class="mt-1 flex items-end gap-2"><span class="text-2xl font-black text-slate-800">126/78</span><span class="text-xs text-emerald-600">mmHg</span></div></div>
+                <div class="rounded-xl bg-white p-3"><div class="text-xs text-slate-500">血糖</div><div class="mt-1 flex items-end gap-2"><span class="text-2xl font-black text-slate-800">6.2</span><span class="text-xs text-emerald-600">mmol/L</span></div></div>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div class="text-lg font-bold text-slate-800">数据趋势</div>
+              <div class="mt-4 space-y-3">
+                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>心率</span><span>70 bpm</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[68%] rounded-full bg-gradient-to-r from-amber-300 to-orange-500"></div></div></div>
+                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>睡眠</span><span>7.4 h</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[74%] rounded-full bg-gradient-to-r from-sky-400 to-cyan-600"></div></div></div>
+                <div><div class="mb-1 flex justify-between text-xs text-slate-600"><span>步数</span><span>6,280</span></div><div class="h-2.5 rounded-full bg-slate-200"><div class="h-full w-[82%] rounded-full bg-gradient-to-r from-emerald-400 to-green-600"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
+          <div class="mb-5"><div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Care Journey</div><h3 class="mt-1 text-2xl font-bold text-slate-800">随访与处方</h3></div>
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-3 flex items-center justify-between"><div class="text-xl font-bold text-slate-800">下一次随访</div><div class="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">已预约</div></div>
+            <div class="rounded-2xl bg-white p-3"><div class="mb-2 text-sm text-slate-500">时间</div><div class="text-xl font-black text-slate-800">2026-10-23 15:30</div></div>
+            <div class="mt-4"><div class="mb-2 text-sm text-slate-500">方式</div><div class="flex gap-2"><button data-toggle="village" class="toggle-btn flex-1 rounded-xl border border-medical-300 bg-medical-100 px-3 py-2 text-sm font-semibold text-medical-700">村医上门</button><button data-toggle="remote" class="toggle-btn flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600">远程线上</button></div></div>
+            <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-100 p-3"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-slate-700">随访人</span><span class="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-semibold text-sky-700">村医团队</span></div><div class="mt-2 text-sm text-slate-600">主责：村卫生室 + 乡镇护士指导</div></div>
+          </div>
+          <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-3 text-lg font-bold text-slate-800">康复处方卡</div>
+            <div class="space-y-3">
+              <div class="rounded-xl bg-white p-3"><div class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">运动处方</div><div class="text-base font-bold text-slate-800">快走 + 呼吸训练</div><div class="mt-1 text-sm text-slate-600">每周 5 次，每次 30 分钟；强度为轻至中等。</div></div>
+              <div class="rounded-xl bg-white p-3"><div class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">用药提醒</div><div class="text-base font-bold text-slate-800">阿司匹林 100mg</div><div class="mt-1 text-sm text-slate-600">每日一次，餐后服药；提醒：过敏史及胃部不适反馈。</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="doctor" class="mb-10 grid gap-6 xl:grid-cols-[1fr_1.05fr]">
+        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
+          <div class="mb-5"><div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Clinical Triage</div><h3 class="mt-1 text-2xl font-bold text-slate-800">医生端管理看板</h3></div>
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-risk-200 bg-risk-50 p-4">
+              <div class="flex items-center justify-between"><div class="text-lg font-bold text-risk-700">高风险预警</div><span class="rounded-full bg-risk-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-risk-700">红</span></div>
+              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者A</div><div class="mt-1 font-bold text-slate-800">血压 160/96</div></div>
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-risk-700">需紧急复诊</div></div>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-warn-200 bg-warn-50 p-4">
+              <div class="flex items-center justify-between"><div class="text-lg font-bold text-warn-700">中风险观察</div><span class="rounded-full bg-warn-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn-700">黄</span></div>
+              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者B</div><div class="mt-1 font-bold text-slate-800">活动量下降 18%</div></div>
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-warn-700">规律提醒</div></div>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-care-200 bg-care-50 p-4">
+              <div class="flex items-center justify-between"><div class="text-lg font-bold text-care-700">正常管理</div><span class="rounded-full bg-care-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-care-700">绿</span></div>
+              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">患者C</div><div class="mt-1 font-bold text-slate-800">血糖稳定</div></div>
+                <div class="rounded-xl bg-white p-3"><div class="text-slate-500">状态</div><div class="mt-1 font-bold text-care-700">保持随访</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Care Queue</div>
+              <h3 class="mt-1 text-2xl font-bold text-slate-800">随访排程列表</h3>
+            </div>
+            <button class="rounded-full bg-medical-700 px-3 py-1.5 text-xs font-semibold text-white">新增任务</button>
+          </div>
+          <div class="space-y-3">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">张晓丽</div><div class="mt-1 text-xs text-slate-500">高血压 + 运动依从低</div></div><div class="rounded-full bg-risk-100 px-2 py-1 text-[10px] font-semibold text-risk-700">每周</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：村医</span><span class="rounded-full bg-blue-100 px-2 py-1 text-blue-700">重点监测</span></div></div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">王建国</div><div class="mt-1 text-xs text-slate-500">糖尿病合并冠心病</div></div><div class="rounded-full bg-warn-100 px-2 py-1 text-[10px] font-semibold text-warn-700">每两周</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：乡镇护士</span><span class="rounded-full bg-amber-100 px-2 py-1 text-amber-700">远程随访</span></div></div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div class="flex items-center justify-between gap-3"><div><div class="text-base font-bold text-slate-800">李春梅</div><div class="mt-1 text-xs text-slate-500">已掌握数字工具，行为习惯稳定</div></div><div class="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">每月</div></div><div class="mt-3 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-slate-200 px-2 py-1 text-slate-700">服务主导：县医院</span><span class="rounded-full bg-green-100 px-2 py-1 text-green-700">数字友好型</span></div></div>
+          </div>
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-3 text-lg font-bold text-slate-800">患者画像 / 标签</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">经济敏感型</span>
+              <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700">信任村医型</span>
+              <span class="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">数字友好型</span>
+              <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">高复发风险</span>
+              <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-700">心理压力高</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dce" class="rounded-[30px] border border-slate-200 bg-white/90 p-5 shadow-soft md:p-7">
+        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">DCE Interactive Demo</div>
+            <h3 class="mt-1 text-2xl font-bold text-slate-800">服务方案偏好选择</h3>
+          </div>
+          <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">模拟：PPT 第33页 / 第73页中的选择卡片</div>
+        </div>
+        <div class="grid gap-5 lg:grid-cols-2">
+          <button class="choice-card selected group rounded-[28px] border bg-white p-5 text-left" data-choice="A">
+            <div class="mb-4 flex items-center justify-between">
+              <div><div class="text-xs font-semibold uppercase tracking-[0.18em] text-medical-700">方案 A</div><div class="mt-1 text-2xl font-black text-slate-800">家庭式持续支持</div></div>
+              <span class="rounded-full bg-medical-100 px-3 py-1 text-xs font-semibold text-medical-700">更偏互动型</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务提供者</span><span class="text-sm font-bold text-slate-800">村医 + 乡镇护士</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务方式</span><span class="text-sm font-bold text-slate-800">上门随访 + 线上提醒</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务频次</span><span class="text-sm font-bold text-slate-800">每周 1 次</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">自付费用</span><span class="text-sm font-bold text-slate-800">¥280 / 月</span></div>
+            </div>
+            <div class="mt-5 flex items-center justify-between"><div class="text-xs text-slate-500">适用人群：信任村医型、经济敏感型</div><div class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">推荐</div></div>
+          </button>
+
+          <button class="choice-card group rounded-[28px] border bg-white p-5 text-left" data-choice="B">
+            <div class="mb-4 flex items-center justify-between">
+              <div><div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">方案 B</div><div class="mt-1 text-2xl font-black text-slate-800">数字化远程管理</div></div>
+              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">更偏数字型</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务提供者</span><span class="text-sm font-bold text-slate-800">县医院 + APP + AI助手</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务方式</span><span class="text-sm font-bold text-slate-800">云端管理 + 远程问诊</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">服务频次</span><span class="text-sm font-bold text-slate-800">每两周 1 次</span></div>
+              <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"><span class="text-sm text-slate-500">自付费用</span><span class="text-sm font-bold text-slate-800">¥420 / 月</span></div>
+            </div>
+            <div class="mt-5 flex items-center justify-between"><div class="text-xs text-slate-500">适用人群：数字友好型、追求效率型</div><div class="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">创新</div></div>
+          </button>
+        </div>
+
+        <div class="mt-6 flex flex-col items-center justify-center gap-4">
+          <button id="statusChoice" class="rounded-full border border-slate-300 bg-slate-100 px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-200">两者均不选（维持现状）</button>
+          <div id="feedbackToast" class="toast fixed bottom-6 right-6 max-w-sm rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-2xl">记录成功，您的选择将帮助平台优化功能优先级</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const choiceCards = document.querySelectorAll('.choice-card');
+      const toggleButtons = document.querySelectorAll('.toggle-btn');
+      const statusChoice = document.getElementById('statusChoice');
+      const feedbackToast = document.getElementById('feedbackToast');
+      choiceCards.forEach((card) => {
+        card.addEventListener('click', () => {
+          choiceCards.forEach((c) => c.classList.remove('selected'));
+          card.classList.add('selected');
+          showToast('记录成功，您的选择将帮助平台优化功能优先级');
+        });
+      });
+      statusChoice.addEventListener('click', () => {
+        choiceCards.forEach((c) => c.classList.remove('selected'));
+        showToast('已选择维持现状：系统将保留当前服务策略');
+      });
+      toggleButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          toggleButtons.forEach((el) => {
+            el.classList.remove('bg-medical-100', 'border-medical-300', 'text-medical-700');
+            el.classList.add('bg-white', 'border-slate-200', 'text-slate-600');
+          });
+          btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600');
+          btn.classList.add('bg-medical-100', 'border-medical-300', 'text-medical-700');
+        });
+      });
+      function showToast(message) {
+        feedbackToast.textContent = message;
+        feedbackToast.classList.add('show');
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => { feedbackToast.classList.remove('show'); }, 2200);
+      }
+    </script>
+  </body>
+</html>
