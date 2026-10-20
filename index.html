@@ -65,6 +65,7 @@
       .soft-button { border: 1px solid #dbe3ee; background: #f8fafc; border-radius: 999px; padding: 0.55rem 1rem; font-weight: 600; }
       .soft-button:hover { background: #eef3f9; }
       .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+      .search-result-card { border: 1px solid rgba(148,163,184,0.28); border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.8)); }
       @media (max-width: 768px) {
         .grid-2 { grid-template-columns: 1fr; }
       }
@@ -79,26 +80,26 @@
       const DEMO_NOTICE = '本平台为护理学研究原型，所有患者信息、健康数据、康复计划和随访记录均为模拟数据，仅用于界面演示与交互测试。';
       const routeMeta = {
         '/home': '首页工作台',
-        '/patients': '患者管理',
+        '/patients': '患者端',
         '/health': '健康数据中心',
         '/plans': '康复计划',
         '/followups': '随访管理',
         '/events': '风险事件',
         '/education': '健康教育',
-        '/ai': 'AI问答演示',
+        '/ai': '智能问答',
         '/profiles': '患者画像',
         '/dce': 'DCE演示',
         '/system': '系统说明'
       };
       const NAV_ITEMS = [
         { path: '/home', label: '首页' },
-        { path: '/patients', label: '患者管理' },
+        { path: '/patients', label: '患者端' },
         { path: '/health', label: '健康数据' },
         { path: '/plans', label: '康复计划' },
         { path: '/followups', label: '随访管理' },
         { path: '/events', label: '风险事件' },
         { path: '/education', label: '健康教育' },
-        { path: '/ai', label: 'AI问答' },
+        { path: '/ai', label: '智能问答' },
         { path: '/profiles', label: '画像' },
         { path: '/dce', label: 'DCE' },
         { path: '/system', label: '系统说明' }
@@ -118,8 +119,59 @@
       const FOLLOWUP_MODES = ['电话随访', '门诊复诊', '微信提醒', '社区护士上门'];
       const PLAN_STATUS = ['待开始', '进行中', '已完成', '延期'];
 
+      const defaultEducationArticles = [
+        { title: '心脏康复基础知识', category: '心脏康复基础知识', summary: '了解心脏康复的目的、形式和基本安全原则。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', content: '心脏康复关注规律运动、健康教育、心理支持和生活方式调整，帮助患者恢复信心和体能。' },
+        { title: '血压自测与记录方法', category: '血压、心率和体重监测', summary: '掌握基础的血压和心率自测方法。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/bloodpressure/about.htm', content: '规律测量和记录血压与心率，能够帮助患者及时了解变化趋势。' },
+        { title: '适度运动与活动管理', category: '居家运动与活动管理', summary: '制定安全、可持续的运动计划。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', content: '运动建议遵循循序渐进、量力而行和安全优先的原则。' },
+        { title: '低盐饮食与睡眠管理', category: '饮食、睡眠和生活方式', summary: '保持低盐和规律作息，促进恢复。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/salt/index.htm', content: '低盐饮食和规律睡眠能辅助控制血压和改善恢复效果。' },
+        { title: '药物管理与复诊随访', category: '用药管理与复诊随访', summary: '按时服药并定期复诊。', sourceName: 'FDA', sourceYear: '2024', sourceUrl: 'https://www.fda.gov/drugs/consumer-information-about-drug-labels', content: '药物治疗应遵循医生指导，不要自行停药、减药或加药。' },
+        { title: '危险信号识别与就医提醒', category: '症状识别和就医提醒', summary: '识别可能需要紧急医疗帮助的症状。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack', content: '胸痛、呼吸困难、明显头晕或晕厥等症状应尽快就医。' }
+      ];
+
+      const AI_KB = [
+        { id: 'AI-01', category: '心脏康复基础知识', question: '什么是心脏康复？', alternativeQuestions: ['心脏康复是什么意思', '心脏康复有什么用'], keywords: ['心脏康复', '康复训练', '恢复', '运动计划'], answer: '心脏康复是针对心血管疾病患者的一种综合性管理方案，通常包括有氧运动训练、健康教育、心理支持、生活方式调整和药物依从性指导。其目的是帮助患者逐步恢复活动能力、提高自我管理能力，并降低再次住院和心血管事件风险。对于冠心病、心肌梗死后恢复、冠脉介入术后或心衰患者，康复计划应在医生或专业团队指导下制定。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '本答案仅为一般健康教育，不能代替医生面对面评估和个体化治疗方案。' },
+        { id: 'AI-02', category: '心脏康复基础知识', question: '心脏康复为什么重要？', alternativeQuestions: ['做心脏康复有什么好处', '康复训练能不能帮助恢复'], keywords: ['康复重要性', '心脏恢复', '生活方式', '风险控制'], answer: '心脏康复有助于提高患者的体能、改善生活质量，并帮助患者掌握更安全的运动和生活方式。通过规律运动和健康教育，很多患者能够更好地控制血压、改善睡眠、减少焦虑，并提高对自我管理的信心。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '本答案仅为一般信息，不替代医生的个体化评估。' },
+        { id: 'AI-03', category: '心脏康复基础知识', question: '参加心脏康复需要注意什么？', alternativeQuestions: ['做康复时要避免什么', '心脏康复期间要注意哪些事项'], keywords: ['注意事项', '运动强度', '心绞痛', '安全'], answer: '在心脏康复期间，最重要的是遵循“量力而行”和“医生指导”的原则。开始前应评估既往症状、运动耐量和药物情况，训练强度应逐步增加。若出现胸痛、明显气短、头晕、心悸加重或极度疲劳，应立即停止活动并及时联系医务人员。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '任何不适都应及时咨询医生，不可自行加大运动量。' },
+        { id: 'AI-04', category: '心脏康复基础知识', question: '我做完支架或手术后，是否需要做心脏康复？', alternativeQuestions: ['手术后需要康复吗', '做完心脏手术还需要康复吗'], keywords: ['支架', 'PCI', '手术后', '术后恢复'], answer: '很多患者在冠脉介入、心梗后或其他心血管事件后，都需要进行康复评估。术后恢复并不等于“完全恢复”，恢复阶段常需要结合运动、药物、心理和生活方式管理。具体是否适合、何时开始、训练强度如何安排，需由医生根据病情和恢复情况决定。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '示例信息只能帮助理解，不可替代专业医生建议。' },
+        { id: 'AI-05', category: '心脏康复基础知识', question: '心脏康复有没有年龄限制？', alternativeQuestions: ['老年人能不能做心脏康复', '年轻人也要做吗'], keywords: ['年龄', '老年人', '康复适应症'], answer: '心脏康复并不只针对年轻人，很多中老年患者都适合参与。是否适合主要取决于病情、稳定性、活动耐量和合并症，而不是简单按年龄来决定。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '任何训练方案都应在专业人员指导下进行。' },
+        { id: 'AI-06', category: '血压、心率和体重监测', question: '在家里为什么要测血压？', alternativeQuestions: ['测血压有什么意义', '为什么要记录血压'], keywords: ['血压', '家庭监测', '高血压', '记录'], answer: '在家中测量血压可以帮助了解血压在不同时间的变化，有助于评估治疗效果，也能帮助发现异常波动。对于心脏康复患者来说，规律监测血压有助于及时发现血压偏高或偏低，便于调整生活方式和复诊时与医生沟通。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/bloodpressure/about.htm', disclaimer: '单次血压数值不能直接诊断疾病，需结合整体情况和医生评估。' },
+        { id: 'AI-07', category: '血压、心率和体重监测', question: '每天需要记录哪些健康数据？', alternativeQuestions: ['健康记录有哪些', '我每天要看哪些指标'], keywords: ['记录', '血压', '心率', '体重', '睡眠'], answer: '常见需要记录的数据包括血压、静息心率、体重、运动时间和睡眠时间等。不同患者的记录重点可能不同，但长期规律记录更容易发现趋势，而不是只看单一天的数值。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/heartdisease/cardiac_rehabilitation.htm', disclaimer: '本回答仅用于一般健康管理，不代替专业医疗判断。' },
+        { id: 'AI-08', category: '血压、心率和体重监测', question: '静息心率偏高应该怎么处理？', alternativeQuestions: ['心率快了怎么办', '静息心率异常是否危险'], keywords: ['静息心率', '心率异常', '心悸', '警示'], answer: '静息心率有个体差异，不能只凭一次数值判断是否异常。若心率持续偏快、伴随胸闷、气短、头晕或明显乏力，应及时记录时间和相关症状，并联系医生或医疗团队。', sourceName: 'American Heart Association', sourceYear: '2023', sourceUrl: 'https://www.heart.org/en/healthy-living/fitness/fitness-basics/target-heart-rates', disclaimer: '不能根据单次心率数据直接诊断疾病，需结合病史和检查。' },
+        { id: 'AI-09', category: '血压、心率和体重监测', question: '体重变化是否和康复有关？', alternativeQuestions: ['为什么要记录体重', '体重涨了要紧吗'], keywords: ['体重', '水肿', '体重波动', '体重管理'], answer: '体重变化在心脏康复中有参考价值，因为它可能反映饮食、液体摄入、活动量和整体状态变化。若出现短期明显体重增加、双脚或小腿水肿、呼吸困难等情况，应及时告知医生。', sourceName: 'National Heart, Lung, and Blood Institute', sourceYear: '2022', sourceUrl: 'https://www.nhlbi.nih.gov/health/heart-failure', disclaimer: '体重变化是一个参考指标，不能单独作为诊断依据。' },
+        { id: 'AI-10', category: '血压、心率和体重监测', question: '测血压时需要注意什么？', alternativeQuestions: ['怎么测血压更准确', '我家里测血压需要注意哪些细节'], keywords: ['测量方法', '血压计', '测量时间', '正确测量'], answer: '测量血压时，建议坐位休息5分钟，避免刚运动、喝咖啡或抽烟后立即测量，袖带位置应与上臂平齐，手臂放松并保持心脏同一高度。记录时最好记下时间、数值和当天状态。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/bloodpressure/measure.htm', disclaimer: '本答案为一般测量建议，不代替医生指导。' },
+        { id: 'AI-11', category: '居家运动与活动管理', question: '我不想运动，怎么安排更容易坚持？', alternativeQuestions: ['每天运动太难怎么办', '运动计划做不下去怎么调整'], keywords: ['坚持', '运动计划', '活动量', '适度运动'], answer: '心脏康复中的运动应遵循“从小量到逐步增加”的原则。可以先从每天 10–20 分钟的步行或轻度活动开始，观察是否有胸闷、头晕、气短等不适。若身体状态稳定，再逐步增加时间和强度。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', disclaimer: '运动安排需结合患者病情、用药和恢复情况，不可盲目增加。' },
+        { id: 'AI-12', category: '居家运动与活动管理', question: '每天需要做多少运动？', alternativeQuestions: ['运动时间多少合适', '我每天要走多少步'], keywords: ['步数', '运动时间', '日常活动', '运动建议'], answer: '运动量应根据个人情况和医生建议来安排，通常是适度有氧活动为主。关键不是一味追求步数，而是要做到规律、持续和安全。可从短时间、低强度活动开始，并用耐受情况逐步提高。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', disclaimer: '灵活调整需结合个人病情和医疗指导。' },
+        { id: 'AI-13', category: '居家运动与活动管理', question: '运动中如果胸口不舒服怎么办？', alternativeQuestions: ['运动时胸闷怎么处理', '胸口疼痛如何处理'], keywords: ['胸痛', '胸闷', '气短', '运动停止'], answer: '如果在活动中出现明显胸痛、胸闷、呼吸困难、眩晕、冷汗或极度疲劳，应立即停止运动，坐下或休息，并尽快联系医生或急救服务。若症状严重、持续不缓解或伴有呼吸困难，应立即寻求紧急医疗帮助。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack', disclaimer: '胸痛和胸闷可能意味着急症，不能自行观察等待。' },
+        { id: 'AI-14', category: '居家运动与活动管理', question: '我忘记记录一天的运动怎么办？', alternativeQuestions: ['忘了运动怎么记录', '一天没运动是否影响康复'], keywords: ['运动记录', '计划中断', '遗漏', '坚持'], answer: '偶尔漏做一次运动不等于康复失败，重要的是及时回到计划中。可以在下一天轻松补做一段适度活动，避免“补救式剧烈运动”。关键是保持长期规律，而不是因某一天中断就完全放弃。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', disclaimer: '不要为了补救而突然增加运动量。' },
+        { id: 'AI-15', category: '居家运动与活动管理', question: '心脏康复期间应该注意哪些运动问题？', alternativeQuestions: ['运动时要避免什么', '什么运动不适合我'], keywords: ['运动安全', '避免剧烈', '高强度', '风险'], answer: '高强度运动、突然快速冲刺、过度长时间锻炼，以及在大热大冷或湿度大的环境中进行剧烈活动，都可能增加负担。若出现明显不适，应该停下来并咨询医生。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/physical-activity', disclaimer: '训练强度和模式应遵循医生或康复师建议。' },
+        { id: 'AI-16', category: '饮食、睡眠和生活方式', question: '心脏康复期间应该怎么吃更合适？', alternativeQuestions: ['饮食有哪些要求', '降血压饮食怎么安排'], keywords: ['饮食', '低盐', '健康膳食', '营养'], answer: '饮食上通常建议低盐、规律、均衡，尽量减少油炸和高糖食物，并增加新鲜蔬菜、水果、全谷类和优质蛋白。若存在糖尿病、高血压或肾功能问题，饮食调整应更个体化，并遵循医生或营养师建议。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', disclaimer: '饮食调整需要结合患者的具体病情，不应盲目节食或极端限制。' },
+        { id: 'AI-17', category: '饮食、睡眠和生活方式', question: '为什么睡眠也和康复有关？', alternativeQuestions: ['睡眠不好会影响恢复吗', '怎么改善睡眠'], keywords: ['睡眠', '休息', '睡眠不足', '疲劳'], answer: '睡眠不足会影响体能恢复、情绪稳定和心血管调节。规律作息、减少熬夜、控制刺激性饮品、缓解焦虑等，都有助于改善睡眠质量。若长期存在失眠、打鼾或呼吸暂停，也要及时告诉医生。', sourceName: 'WHO', sourceYear: '2023', sourceUrl: 'https://www.who.int/health-topics/sleep', disclaimer: '长期睡眠问题需专业评估，不要自行长期依赖安眠药。' },
+        { id: 'AI-18', category: '饮食、睡眠和生活方式', question: '康复期间可以喝咖啡或酒吗？', alternativeQuestions: ['喝酒会不会影响恢复', '咖啡能不能喝'], keywords: ['饮酒', '咖啡', '生活方式', '健康习惯'], answer: '如果有心血管疾病或高血压，酒精摄入通常应尽量控制，最好遵循医生建议。咖啡因的影响因人而异，部分人可能会出现心跳加快、睡眠受影响。若出现明显心悸、失眠或不适，应减少摄入并咨询医生。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/healthy-diet', disclaimer: '不能自行停药或改变药物方案来代替生活方式调整。' },
+        { id: 'AI-19', category: '饮食、睡眠和生活方式', question: '我想减少盐分摄入，应该怎么做？', alternativeQuestions: ['低盐饮食怎么做', '吃盐太多怎么办'], keywords: ['低盐', '盐分', '饮食控制', '高血压'], answer: '控制盐分要从日常饮食做起，例如减少腌制食品、咸菜、加工肉类和高盐调味品，同时多用新鲜香料、酸味和其他风味替代。重点是长期规律，不是临时“绝食式”节盐。', sourceName: 'CDC', sourceYear: '2024', sourceUrl: 'https://www.cdc.gov/salt/index.htm', disclaimer: '低盐饮食应结合患者是否存在高血压、肾病等具体情况。' },
+        { id: 'AI-20', category: '饮食、睡眠和生活方式', question: '戒烟对心脏康复有什么帮助？', alternativeQuestions: ['抽烟会不会影响恢复', '戒烟后有什么改变'], keywords: ['戒烟', '吸烟', '生活方式', '心血管风险'], answer: '戒烟有助于降低血管损伤、改善血压和心功能，也能减少心血管事件风险。无论目前已经吸烟多久，戒烟都能带来益处。若需要帮助，患者可向医生咨询戒烟方法和支持措施。', sourceName: 'WHO', sourceYear: '2024', sourceUrl: 'https://www.who.int/news-room/fact-sheets/detail/tobacco', disclaimer: '本信息用于一般健康教育，不代替专业咨询。' },
+        { id: 'AI-21', category: '用药管理与复诊随访', question: '为什么需要定期复诊？', alternativeQuestions: ['复诊有什么必要', '我为什么要按时回医院'], keywords: ['复诊', '随访', '医生评估', '及时检查'], answer: '定期复诊有助于医生评估恢复情况、调整治疗方案、检查生活方式和药物反应，并及时发现病情变化。对于心脏康复来说，复诊不只是看结果，也是一种风险管理和自我管理的持续支持。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '按时复诊不能替代紧急就医，若出现明显不适请立即就医。' },
+        { id: 'AI-22', category: '用药管理与复诊随访', question: '如果我不清楚药物怎么服用，应该怎么办？', alternativeQuestions: ['药物说明看不懂怎么办', '我忘记按时吃药怎么处理'], keywords: ['服药', '药物说明', '用法', '药师咨询'], answer: '如果不清楚药物用法、剂量或服用时间，应先查看说明书，并尽快联系医生、药师或医疗团队咨询。切勿自行停药、减药或加倍服用。若忘记服药，一般应按说明书或医生指导处理，切勿因为“补一次”而加倍服药。', sourceName: 'FDA', sourceYear: '2024', sourceUrl: 'https://www.fda.gov/drugs/consumer-information-about-drug-labels', disclaimer: '严禁自行调整药物剂量。' },
+        { id: 'AI-23', category: '用药管理与复诊随访', question: '药物服用后出现恶心或头晕怎么办？', alternativeQuestions: ['吃药后不舒服怎么处理', '药物有副作用怎么办'], keywords: ['副作用', '头晕', '恶心', '用药不适'], answer: '如果药物服用后出现明显不适，如持续头晕、恶心、皮疹、严重乏力或呼吸困难，应立即停止相关药物并及时联系医生或急救服务。不要自行判断是“没事”或“随便忍一忍”。', sourceName: 'FDA', sourceYear: '2024', sourceUrl: 'https://www.fda.gov/drugs/consumer-information-about-drug-labels', disclaimer: '任何明显副作用都需要及时咨询医生，不要私自加药或停药。' },
+        { id: 'AI-24', category: '用药管理与复诊随访', question: '为什么要按时吃药？', alternativeQuestions: ['吃药不按时有什么问题', '药为什么不能漏掉'], keywords: ['按时服药', '依从性', '药物治疗', '规律'], answer: '按时服药有助于维持药物在体内达到有效浓度，减少血压波动、心律问题或心血管事件风险。若经常漏服、停服或自行加减剂量，可能影响治疗效果，也可能导致不良后果。', sourceName: 'FDA', sourceYear: '2024', sourceUrl: 'https://www.fda.gov/drugs/consumer-information-about-drug-labels', disclaimer: '不可自行调整药物剂量。' },
+        { id: 'AI-25', category: '用药管理与复诊随访', question: '我想顺便问，哪些情况需要尽快联系医生？', alternativeQuestions: ['什么情况算需要马上联系医生', '什么情况应该急诊'], keywords: ['医生联系', '异常情况', '及时就医', '警示'], answer: '如果出现持续胸痛、胸闷、明显气短、头晕、心悸持续加重、严重乏力、体重快速增加或血压明显异常等情况，应及时联系医生或急救服务。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/consumer-healthcare/what-is-cardiac-rehabilitation', disclaimer: '如果存在急性症状，应及时就医，不要自行观察。' },
+        { id: 'AI-26', category: '症状识别和就医提醒', question: '胸口突然疼痛时应该怎么办？', alternativeQuestions: ['胸口疼痛是怎么回事', '心绞痛和胸痛怎么区分'], keywords: ['胸痛', '急救', '心绞痛', '呼吸困难'], answer: '胸痛或胸闷如果突然发生，尤其伴有出汗、呼吸急促、恶心、头晕或放射到肩背部，需高度警惕，并尽快联系急救服务或前往急诊。不要继续运动、不要独自等待症状自行消失。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack', disclaimer: '胸痛可能为急症，不能自行拖延就医。' },
+        { id: 'AI-27', category: '症状识别和就医提醒', question: '如果我走路或活动后明显气短，是正常的吗？', alternativeQuestions: ['气短怎么判断正常', '活动后喘不过气怎么办'], keywords: ['气短', '活动后呼吸困难', '不适', '就医'], answer: '轻度活动后短暂气促可能常见，但如果气短持续、明显加重，或伴有胸闷、极度乏力、心悸、头晕或呼吸困难加重，应及时联系医生。不要因为“运动后会累”就忽略明显异常。', sourceName: 'National Heart, Lung, and Blood Institute', sourceYear: '2022', sourceUrl: 'https://www.nhlbi.nih.gov/health/heart-failure', disclaimer: '明显呼吸困难和胸闷应及时就医。' },
+        { id: 'AI-28', category: '症状识别和就医提醒', question: '突然头晕、心悸该怎么做？', alternativeQuestions: ['心跳很快怎么回事', '头晕是不是危险'], keywords: ['头晕', '心悸', '眩晕', '就医'], answer: '如果头晕、心悸突然明显出现，尤其在活动中或伴有胸闷、气短、出汗、意识不清时，应尽快停止活动休息，并联系医生或急救服务。偶尔短暂心悸可能与劳累或情绪有关，但反复或明显加重需要评估。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack', disclaimer: '不稳定的心悸和眩晕不应自行忽略。' },
+        { id: 'AI-29', category: '症状识别和就医提醒', question: '脚踝和小腿突然肿了，是不是心脏问题？', alternativeQuestions: ['脚肿是怎么回事', '小腿水肿怎么办'], keywords: ['水肿', '脚肿', '心衰', '体重增加'], answer: '脚踝或小腿水肿、短期体重明显增加、夜间睡眠不安或呼吸不顺畅，都可能提示液体潴留或心脏功能变化。若这些情况持续出现或伴有心悸、气短，应及时联系医生，勿自行用利尿剂或随意处理。', sourceName: 'National Heart, Lung, and Blood Institute', sourceYear: '2022', sourceUrl: 'https://www.nhlbi.nih.gov/health/heart-failure', disclaimer: '水肿和体重变化可能有多种原因，需由医生评估。' },
+        { id: 'AI-30', category: '症状识别和就医提醒', question: '什么情况下需要直接拨打急救？', alternativeQuestions: ['什么情况必须去急诊', '什么时候应急救'], keywords: ['急救', '胸痛', '呼吸困难', '昏厥'], answer: '当出现胸痛、胸闷伴出汗、持续气短、严重头晕、意识模糊、晕厥、明显心悸、持续不缓解的痛苦或明显活动耐受下降时，应立即联系急救服务。不要继续运动，也不要等到症状消失后再处理。', sourceName: 'American Heart Association', sourceYear: '2024', sourceUrl: 'https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack', disclaimer: '急性症状需尽快就医，不能自行等待观察。' }
+      ];
+
+      const appState = {
+        selectedPatientId: null,
+        aiQuery: '',
+        aiCategory: ''
+      };
+
       function uid(prefix='id') {
         return prefix + '-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-6);
+      }
+      function normalizeAiText(value) {
+        return String(value || '').toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
       }
       function formatDate(value) {
         if (!value) return '—';
@@ -133,13 +185,220 @@
         if (Number.isNaN(date.getTime())) return value;
         return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
       }
+      function getLatestRecordDate(records) {
+        if (!records.length) return null;
+        return records.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0].date;
+      }
+      function getNextFollowUpDate(followUps) {
+        const valid = followUps.filter(item => item.status !== '已完成' && item.dueDate).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+        return valid.length ? valid[0].dueDate : null;
+      }
+      function getPatientById(store, patientId) {
+        return store.patients.find(patient => patient.id === patientId) || null;
+      }
+      function getPatientRecords(store, patientId) {
+        return store.healthRecords.filter(item => item.patientId === patientId).sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+      function getPatientTasks(store, patientId) {
+        return (store.rehabTasks || []).filter(item => item.patientId === patientId).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      }
+      function getPatientFollowUps(store, patientId) {
+        return (store.followUps || []).filter(item => item.patientId === patientId).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      }
+      function getHomeStats(store) {
+        const patients = Array.isArray(store.patients) ? store.patients : [];
+        const healthRecords = Array.isArray(store.healthRecords) ? store.healthRecords : [];
+        const followUps = Array.isArray(store.followUps) ? store.followUps : [];
+        const riskEvents = Array.isArray(store.riskEvents) ? store.riskEvents : [];
+        const rehabTasks = Array.isArray(store.rehabTasks) ? store.rehabTasks : [];
+        const latestDate = getLatestRecordDate(healthRecords);
+        const totalPatients = patients.length;
+        const totalRecords = healthRecords.length;
+        const todayRecords = latestDate ? healthRecords.filter(item => item.date === latestDate).length : 0;
+        const pendingFollowUps = followUps.filter(item => item.status !== '已完成').length;
+        const pendingEvents = riskEvents.filter(item => item.status !== '已完成').length;
+        const doneTasks = rehabTasks.filter(item => item.status === '已完成').length;
+        const completionRate = rehabTasks.length ? Number(((doneTasks / rehabTasks.length) * 100).toFixed(1)) : 0;
+        return {
+          totalPatients,
+          totalRecords,
+          todayRecords,
+          pendingFollowUps,
+          pendingEvents,
+          completionRate
+        };
+      }
+      function recalcTaskProgress(store) {
+        const groups = {};
+        (store.rehabTasks || []).forEach(task => {
+          if (!groups[task.patientId]) groups[task.patientId] = [];
+          groups[task.patientId].push(task);
+        });
+        Object.keys(groups).forEach(patientId => {
+          const tasks = groups[patientId];
+          const total = tasks.length || 1;
+          const done = tasks.filter(task => task.status === '已完成').length;
+          const percent = Math.round((done / total) * 100);
+          const patientPlan = (store.rehabPlans || []).find(plan => plan.patientId === patientId);
+          if (patientPlan) {
+            patientPlan.currentCompletion = percent;
+            patientPlan.status = percent >= 80 ? '已完成' : percent >= 40 ? '进行中' : '待开始';
+          }
+        });
+      }
+      function getAiCategories() {
+        const categories = [...new Set(AI_KB.map(item => item.category))];
+        return categories;
+      }
+      function searchAiKnowledgeBase(query, categoryFilter = '') {
+        const normalizedQuery = normalizeAiText(query);
+        const entries = AI_KB.filter(item => !categoryFilter || item.category === categoryFilter);
+        if (!normalizedQuery) return entries.slice(0, 6);
+        const scored = entries.map(item => {
+          const haystack = [
+            item.question,
+            item.category,
+            ...(item.alternativeQuestions || []),
+            ...(item.keywords || [])
+          ].map(normalizeAiText).join(' ');
+          let score = 0;
+          if (haystack.includes(normalizedQuery)) score += 5;
+          const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+          tokens.forEach(token => {
+            if (!token || token.length < 2) return;
+            if (haystack.includes(token)) score += 2;
+            if (item.keywords.some(keyword => normalizeAiText(keyword).includes(token))) score += 2;
+          });
+          return { item, score };
+        }).filter(result => result.score > 0).sort((a, b) => b.score - a.score).map(result => result.item);
+        return scored.slice(0, 8);
+      }
+      function getRelatedAiQuestions(currentItem, limit = 3) {
+        const sameCategory = AI_KB.filter(item => item.category === currentItem.category && item.id !== currentItem.id);
+        const fallback = AI_KB.filter(item => item.id !== currentItem.id);
+        const pool = sameCategory.length ? sameCategory : fallback;
+        return pool.slice(0, limit);
+      }
+      function renderAiAnswerPanel(query = '', categoryFilter = '') {
+        const results = searchAiKnowledgeBase(query, categoryFilter);
+        if (!results.length) {
+          return `
+            <div class="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 text-sm text-yellow-800">
+              <div class="font-semibold">暂未在当前知识库中找到匹配答案。</div>
+              <div class="mt-2">建议查阅权威医学资料，或向医务人员咨询。</div>
+            </div>
+          `;
+        }
+        return results.map(item => {
+          const related = getRelatedAiQuestions(item, 3);
+          return `
+            <div class="search-result-card p-5">
+              <div class="mb-3 flex flex-wrap items-center gap-2">
+                <span class="chip bg-blue-50 text-blue-700">${item.category}</span>
+                <span class="chip bg-slate-100 text-slate-700">${item.id}</span>
+              </div>
+              <div class="text-lg font-bold text-slate-800">Q：${item.question}</div>
+              <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                <div class="mb-1 font-semibold text-slate-800">答：</div>
+                ${item.answer}
+              </div>
+              <div class="mt-4 grid gap-3 md:grid-cols-2">
+                <div class="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                  <div class="mb-1 font-semibold text-slate-800">答案来源</div>
+                  <div>${item.sourceName}（${item.sourceYear}）</div>
+                  <a href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block break-all text-blue-600 underline">${item.sourceUrl}</a>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                  <div class="mb-1 font-semibold text-slate-800">安全提示</div>
+                  <div>${item.disclaimer}</div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <div class="mb-2 text-sm font-semibold text-slate-700">相关问题推荐</div>
+                <div class="flex flex-wrap gap-2">
+                  ${related.map(relatedItem => `
+                    <button data-ai-question="${relatedItem.question}" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">
+                      ${relatedItem.question}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="mt-4">
+                <button data-ai-edu="${item.category}" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">查看相关健康教育文章</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      function renderAiPage() {
+        const categories = getAiCategories();
+        const defaultQuestions = ['什么是心脏康复？','在家里为什么要测血压？','每天需要记录哪些健康数据？','忘记记录一天的运动怎么办？','为什么需要定期复诊？','胸口突然疼痛时应该怎么办？'];
+        return `
+          <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div class="label">心脏康复智能问答</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">本地知识库问答</h1>
+            </div>
+            <span class="chip bg-violet-50 text-violet-700">本地知识库</span>
+          </div>
 
+          <div class="panel p-5">
+            <div class="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <input id="aiQuestionInput" type="text" value="${appState.aiQuery || ''}" placeholder="例如：运动、血压、胸痛、复诊..." class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none focus:border-medical-500 focus:bg-white" />
+              <button id="aiSearchBtn" class="rounded-2xl bg-medical-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-medical-700">搜索</button>
+              <select id="aiCategoryFilter" class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 outline-none focus:border-medical-500">
+                <option value="">全部分类</option>
+                ${categories.map(category => `<option value="${category}" ${appState.aiCategory === category ? 'selected' : ''}>${category}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">常见问题</div>
+                <span class="chip bg-blue-50 text-blue-700">30 组问题</span>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                ${defaultQuestions.map(question => `
+                  <button data-ai-question="${question}" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">
+                    ${question}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-3 text-lg font-bold text-slate-800">问题分类</div>
+              <div class="flex flex-wrap gap-2">
+                <button data-ai-category="" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">全部</button>
+                ${categories.map(category => `
+                  <button data-ai-category="${category}" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">
+                    ${category}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div id="aiAnswerPanel" class="mt-6 space-y-4">
+            ${renderAiAnswerPanel(appState.aiQuery, appState.aiCategory)}
+          </div>
+        `;
+      }
       function generateSeedData() {
         const patients = [];
         const healthRecords = [];
         const rehabPlans = [];
+        const rehabTasks = [];
         const followUps = [];
         const riskEvents = [];
+        const educationArticles = defaultEducationArticles.map((article, index) => ({
+          id: uid('article'),
+          articleId: `A${String(index + 1).padStart(3, '0')}`,
+          ...article,
+          isDemo: true
+        }));
 
         const baseDates = ['2026-10-13','2026-10-14','2026-10-15','2026-10-16','2026-10-17','2026-10-18','2026-10-19'];
 
@@ -152,11 +411,12 @@
           const digitalSkill = DIGITAL_SKILLS[i % DIGITAL_SKILLS.length];
           const need = NEEDS[i % NEEDS.length];
           const followMode = FOLLOWUP_MODES[i % FOLLOWUP_MODES.length];
+          const patientName = CHINESE_NAMES[i];
           const lastRecordDate = baseDates[(i + 5) % baseDates.length];
 
           patients.push({
             id: patientId,
-            name: CHINESE_NAMES[i],
+            name: patientName,
             age,
             gender,
             diagnosis,
@@ -197,34 +457,53 @@
 
           const planStart = `2026-${String(9 + (i % 3)).padStart(2, '0')}-0${(i % 8) + 1}`;
           const planEnd = `2026-${String(10 + ((i + 2) % 2)).padStart(2, '0')}-2${(i % 8) + 5}`;
-          const completion = 52 + ((i * 7) % 42);
-          const statusIndex = i % PLAN_STATUS.length;
-          rehabPlans.push({
+          const plan = {
             id: uid('plan'),
             patientId,
-            planName: `${CHINESE_NAMES[i]}的居家康复计划`,
+            planName: `${patientName}的居家康复计划`,
             startDate: planStart,
             endDate: planEnd,
-            goal: '在模拟环境中保持规律运动、血压监测和自我管理，促进心脏康复持续性。',
+            goal: '保持规律运动、监测血压与心率、坚持自我管理，提高生活质量和恢复耐受。',
             weeklyTasks: [
               '每周完成 3 次 20–30 分钟有氧运动',
               '每天记录血压、心率和睡眠质量',
               '按医嘱服药并记录不良反应',
               '每周一次健康教育学习与复盘'
             ],
-            currentCompletion: completion,
-            status: PLAN_STATUS[statusIndex],
+            currentCompletion: 0,
+            status: '待开始',
             isDemo: true
+          };
+          rehabPlans.push(plan);
+
+          const taskTemplates = [
+            { taskName: '每日血压和心率记录', description: '在固定时间点记录血压和静息心率', dueDate: '2026-10-20', status: i % 2 === 0 ? '已完成' : '待完成' },
+            { taskName: '有氧运动训练', description: '完成 20–30 分钟低强度活动', dueDate: '2026-10-21', status: i % 3 === 0 ? '已完成' : '待完成' },
+            { taskName: '饮食和睡眠记录', description: '记录盐分摄入与睡眠情况', dueDate: '2026-10-22', status: i % 4 === 0 ? '已完成' : '待完成' },
+            { taskName: '随访准备与复诊确认', description: '核对复诊时间并准备相关记录', dueDate: '2026-10-23', status: i % 5 === 0 ? '已完成' : '待完成' }
+          ];
+
+          taskTemplates.forEach(taskData => {
+            rehabTasks.push({
+              id: uid('task'),
+              patientId,
+              taskName: taskData.taskName,
+              description: taskData.description,
+              dueDate: taskData.dueDate,
+              status: taskData.status,
+              note: '模拟数据：用于演示任务联动',
+              isDemo: true
+            });
           });
 
-          const followupCount = i % 3 === 0 ? 2 : 1;
-          for (let f = 0; f < followupCount; f += 1) {
+          const followUpCount = i % 3 === 0 ? 2 : 1;
+          for (let f = 0; f < followUpCount; f += 1) {
             const dueDate = `2026-10-${String((15 + i + f) % 27 + 1).padStart(2, '0')}`;
             const status = f === 0 ? '已完成' : '待随访';
             followUps.push({
               id: uid('followup'),
               patientId,
-              patientName: CHINESE_NAMES[i],
+              patientName: patientName,
               dueDate,
               method: FOLLOWUP_MODES[(i + f) % FOLLOWUP_MODES.length],
               status,
@@ -238,7 +517,7 @@
             riskEvents.push({
               id: uid('event'),
               patientId,
-              patientName: CHINESE_NAMES[i],
+              patientName,
               eventType: i % 2 === 0 ? '健康数据异常提示' : '患者主动反馈',
               description: i % 2 === 0 ? '模拟记录显示近三天活动量低于计划目标。' : '模拟记录显示患者偶有胸闷不适，需进一步观察。',
               eventTime: `2026-10-${String(14 + (i % 6)).padStart(2, '0')}T09:30:00`,
@@ -248,7 +527,9 @@
           }
         }
 
-        return { patients, healthRecords, rehabPlans, followUps, riskEvents, lastUpdated: new Date().toISOString() };
+        recalcTaskProgress({ patients, healthRecords, rehabPlans, rehabTasks, followUps, riskEvents, educationArticles });
+
+        return { patients, healthRecords, rehabPlans, rehabTasks, followUps, riskEvents, educationArticles, aiKnowledgeBase: AI_KB, lastUpdated: new Date().toISOString() };
       }
 
       function readStore() {
@@ -265,6 +546,9 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
             return initial;
           }
+          if (!parsed.rehabTasks) parsed.rehabTasks = [];
+          if (!parsed.educationArticles) parsed.educationArticles = defaultEducationArticles.map((article, index) => ({ id: uid('article'), articleId: `A${String(index+1).padStart(3,'0')}`, ...article, isDemo: true }));
+          recalcTaskProgress(parsed);
           return parsed;
         } catch (error) {
           console.warn('readStore failed', error);
@@ -273,44 +557,409 @@
           return initial;
         }
       }
-
       function writeStore(data) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       }
-
       function resetStore() {
         const seed = generateSeedData();
         writeStore(seed);
         renderApp();
       }
 
-      function getDashboardStats(store = readStore()) {
-        const totalPatients = store.patients.length;
-        const totalRecords = store.healthRecords.length;
-        const completedPlans = store.rehabPlans.filter(plan => Number(plan.currentCompletion) >= 80).length;
-        const totalPlans = store.rehabPlans.length;
-        const completionRate = totalPlans ? Number(((completedPlans / totalPlans) * 100).toFixed(1)) : 0;
-        const pendingFollowUps = store.followUps.filter(item => item.status === '待随访').length;
-        const activeAlerts = store.riskEvents.filter(item => item.status !== '已完成').length;
-        return {
-          totalPatients,
-          totalRecords,
-          completionRate,
-          pendingFollowUps,
-          activeAlerts,
-          totalPlans,
-          totalFollowUps: store.followUps.length
-        };
+      function renderEducationPage(store) {
+        const articles = (store.educationArticles || defaultEducationArticles.map((article, index) => ({ id: uid('article'), articleId: `A${String(index+1).padStart(3,'0')}`, ...article, isDemo: true }))); 
+        const highPriority = appState.aiCategory ? articles.filter(article => article.category === appState.aiCategory) : articles;
+        const targetArticles = highPriority.length ? highPriority : articles;
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">健康教育</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">推荐健康教育内容</h1>
+            </div>
+            <span class="chip bg-cyan-50 text-cyan-700">模拟数据</span>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            ${targetArticles.map(article => `
+              <div class="panel p-5">
+                <div class="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">${article.category}</div>
+                <h3 class="text-lg font-bold text-slate-800">${article.title}</h3>
+                <p class="mt-3 text-sm text-slate-600">${article.summary}</p>
+                <div class="mt-3 text-xs text-slate-500">来源：${article.sourceName}（${article.sourceYear}）</div>
+                <a href="${article.sourceUrl}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-block break-all text-xs text-blue-600 underline">${article.sourceUrl}</a>
+                <div class="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">${article.content}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
       }
 
-      function navLink(path) {
-        return `<a href="#${path}" class="nav-link ${location.hash === '#' + path || (!location.hash && path === '/home') ? 'active' : ''} inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600">${NAV_ITEMS.find(item => item.path === path)?.label || '首页'}</a>`;
+      function renderPatientsPage(store) {
+        const patientList = store.patients || [];
+        const selectedPatient = getPatientById(store, appState.selectedPatientId || patientList[0]?.id) || patientList[0];
+        if (selectedPatient) appState.selectedPatientId = selectedPatient.id;
+        const patientRecords = selectedPatient ? getPatientRecords(store, selectedPatient.id) : [];
+        const patientTasks = selectedPatient ? getPatientTasks(store, selectedPatient.id) : [];
+        const patientFollowUps = selectedPatient ? getPatientFollowUps(store, selectedPatient.id) : [];
+        const last7 = patientRecords.slice(-7);
+        const maxValue = Math.max(...last7.map(record => record.systolic || 0), 1);
+        const nextFollowUp = getNextFollowUpDate(patientFollowUps);
+        const recommendedArticles = (store.educationArticles || []).slice(0, 3);
+        const qaSuggestions = AI_KB.slice(0, 5);
+
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">患者端</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">患者今日概览</h1>
+            </div>
+            <span class="chip bg-blue-50 text-blue-700">模拟数据</span>
+          </div>
+
+          <div class="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+            <div class="panel p-4">
+              <div class="mb-3 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">患者列表</div>
+                <span class="chip bg-slate-100 text-slate-600">${patientList.length} 位</span>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr class="text-left text-sm text-slate-500">
+                      <th>编号</th>
+                      <th>姓名</th>
+                      <th>疾病</th>
+                      <th>阶段</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${patientList.map(patient => `
+                      <tr class="cursor-pointer ${selectedPatient && selectedPatient.id === patient.id ? 'bg-blue-50' : ''}" data-patient-select="${patient.id}">
+                        <td class="font-semibold text-slate-800">${patient.id}</td>
+                        <td>${patient.name}</td>
+                        <td>${patient.diagnosis}</td>
+                        <td>${patient.rehabStage}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-3 text-lg font-bold text-slate-800">${selectedPatient ? selectedPatient.name : '患者'}概览</div>
+              <div class="space-y-3 text-sm text-slate-600">
+                <div>编号：<span class="font-semibold text-slate-800">${selectedPatient ? selectedPatient.id : '—'}</span></div>
+                <div>年龄/性别：<span class="font-semibold text-slate-800">${selectedPatient ? `${selectedPatient.age}岁 / ${selectedPatient.gender}` : '—'}</span></div>
+                <div>疾病类型：<span class="font-semibold text-slate-800">${selectedPatient ? selectedPatient.diagnosis : '—'}</span></div>
+                <div>康复阶段：<span class="font-semibold text-slate-800">${selectedPatient ? selectedPatient.rehabStage : '—'}</span></div>
+                <div>数字工具能力：<span class="font-semibold text-slate-800">${selectedPatient ? selectedPatient.digitalSkill : '—'}</span></div>
+                <div>主要需求：<span class="font-semibold text-slate-800">${selectedPatient ? selectedPatient.primaryNeed : '—'}</span></div>
+                <div>最近记录：<span class="font-semibold text-slate-800">${selectedPatient ? formatDate(selectedPatient.lastRecordDate) : '—'}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-2">
+            <div class="panel p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">今日健康记录</div>
+                <span class="chip bg-emerald-50 text-emerald-700">${selectedPatient ? (patientRecords.length ? '已记录' : '未记录') : '—'}</span>
+              </div>
+              <div class="space-y-3">
+                ${selectedPatient && patientRecords.length ? patientRecords.slice(-1).map(record => `
+                  <div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+                    <div class="font-semibold text-slate-800">${formatDate(record.date)}</div>
+                    <div class="mt-2">收缩压：${record.systolic} mmHg</div>
+                    <div>舒张压：${record.diastolic} mmHg</div>
+                    <div>静息心率：${record.heartRate} bpm</div>
+                    <div>体重：${record.weight} kg</div>
+                    <div>运动：${record.workoutMinutes} 分钟</div>
+                    <div>睡眠：${record.sleepHours} 小时</div>
+                  </div>
+                `).join('') : '<div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">暂无本日健康记录。</div>'}
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">最近7天健康数据趋势</div>
+                <span class="chip bg-amber-50 text-amber-700">动态趋势</span>
+              </div>
+              <div class="flex h-40 items-end gap-2">
+                ${last7.length ? last7.map(record => `
+                  <div class="flex flex-1 flex-col items-center justify-end gap-2">
+                    <div class="w-full rounded-t-xl bg-gradient-to-t from-medical-500 to-cyan-400" style="height:${Math.max(18, (record.systolic / maxValue) * 100)}%"></div>
+                    <div class="text-[10px] text-slate-500">${record.date.slice(5)}</div>
+                  </div>
+                `).join('') : '<div class="text-sm text-slate-500">暂无数据。</div>'}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-2">
+            <div class="panel p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">康复任务完成情况</div>
+                <span class="chip bg-violet-50 text-violet-700">${patientTasks.length ? `${Math.round((patientTasks.filter(task => task.status === '已完成').length / patientTasks.length) * 100)}%` : '0%'}</span>
+              </div>
+              <div class="space-y-3">
+                ${patientTasks.length ? patientTasks.map(task => `
+                  <div class="rounded-2xl border border-slate-200 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="font-semibold text-slate-800">${task.taskName}</div>
+                        <div class="text-xs text-slate-500">${task.description}</div>
+                      </div>
+                      <button class="toggle-task-btn rounded-full ${task.status === '已完成' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'} px-2 py-1 text-xs font-semibold" data-task-id="${task.id}">
+                        ${task.status === '已完成' ? '已完成' : '标记完成'}
+                      </button>
+                    </div>
+                  </div>
+                `).join('') : '<div class="text-sm text-slate-500">暂无任务。</div>'}
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div class="text-lg font-bold text-slate-800">下一次随访日期</div>
+                <span class="chip bg-blue-50 text-blue-700">${nextFollowUp ? formatDate(nextFollowUp) : '待安排'}</span>
+              </div>
+              <div class="space-y-3">
+                ${patientFollowUps.length ? patientFollowUps.map(item => `
+                  <div class="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+                    <div class="font-semibold text-slate-800">${item.method}</div>
+                    <div class="mt-1">日期：${formatDate(item.dueDate)}</div>
+                    <div>状态：${item.status}</div>
+                  </div>
+                `).join('') : '<div class="text-sm text-slate-500">暂无随访安排。</div>'}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-2">
+            <div class="panel p-5">
+              <div class="mb-4 text-lg font-bold text-slate-800">推荐的健康教育内容</div>
+              <div class="space-y-3">
+                ${recommendedArticles.map(article => `
+                  <div class="rounded-2xl border border-slate-200 p-3">
+                    <div class="font-semibold text-slate-800">${article.title}</div>
+                    <div class="mt-1 text-xs text-slate-500">${article.category}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-4 text-lg font-bold text-slate-800">常见问题入口</div>
+              <div class="flex flex-wrap gap-2">
+                ${qaSuggestions.map(question => `
+                  <button data-ai-question="${question.question}" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">${question.question}</button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-2">
+            <div class="panel p-5">
+              <div class="mb-3 text-lg font-bold text-slate-800">新增健康记录</div>
+              <form id="healthRecordForm" class="space-y-3">
+                <input type="hidden" name="patientId" value="${selectedPatient ? selectedPatient.id : patientList[0]?.id || ''}" />
+                <div class="grid gap-3 md:grid-cols-2">
+                  <label class="text-sm text-slate-600">日期<input name="date" type="date" value="${new Date().toISOString().slice(0, 10)}" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">收缩压<input name="systolic" type="number" min="60" max="220" value="118" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">舒张压<input name="diastolic" type="number" min="40" max="130" value="76" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">静息心率<input name="heartRate" type="number" min="30" max="180" value="72" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">体重（kg）<input name="weight" type="number" step="0.1" min="30" max="200" value="63.0" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">每日运动时间（分钟）<input name="workoutMinutes" type="number" min="0" max="240" value="25" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600 md:col-span-2">睡眠时间（小时）<input name="sleepHours" type="number" step="0.1" min="2" max="12" value="7.5" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                </div>
+                <button type="submit" class="rounded-xl bg-medical-600 px-4 py-2 text-sm font-semibold text-white hover:bg-medical-700">保存健康记录</button>
+              </form>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-3 text-lg font-bold text-slate-800">新增随访记录</div>
+              <form id="followUpForm" class="space-y-3">
+                <input type="hidden" name="patientId" value="${selectedPatient ? selectedPatient.id : patientList[0]?.id || ''}" />
+                <div class="grid gap-3 md:grid-cols-2">
+                  <label class="text-sm text-slate-600">随访日期<input name="dueDate" type="date" value="${new Date().toISOString().slice(0, 10)}" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" /></label>
+                  <label class="text-sm text-slate-600">随访方式<select name="method" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                    ${FOLLOWUP_MODES.map(mode => `<option value="${mode}">${mode}</option>`).join('')}
+                  </select></label>
+                </div>
+                <label class="block text-sm text-slate-600">备注<textarea name="note" rows="4" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">模拟数据：患者已按计划完成随访准备。</textarea></label>
+                <button type="submit" class="rounded-xl bg-care-600 px-4 py-2 text-sm font-semibold text-white hover:bg-care-700">保存随访记录</button>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderHealthPage(store) {
+        const records = (store.healthRecords || []).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        const patientMap = Object.fromEntries((store.patients || []).map(patient => [patient.id, patient]));
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">健康数据中心</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">健康记录列表</h1>
+            </div>
+            <span class="chip bg-emerald-50 text-emerald-700">动态数据</span>
+          </div>
+          <div class="panel p-4">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr class="text-left text-sm text-slate-500">
+                    <th>患者</th>
+                    <th>日期</th>
+                    <th>收缩压</th>
+                    <th>舒张压</th>
+                    <th>静息心率</th>
+                    <th>体重</th>
+                    <th>运动</th>
+                    <th>睡眠</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${records.length ? records.slice(-20).reverse().map(record => `
+                    <tr>
+                      <td>${patientMap[record.patientId]?.name || record.patientId}</td>
+                      <td>${formatDate(record.date)}</td>
+                      <td>${record.systolic} mmHg</td>
+                      <td>${record.diastolic} mmHg</td>
+                      <td>${record.heartRate} bpm</td>
+                      <td>${record.weight} kg</td>
+                      <td>${record.workoutMinutes} min</td>
+                      <td>${record.sleepHours} h</td>
+                    </tr>
+                  `).join('') : '<tr><td colspan="8" class="py-4 text-sm text-slate-500">暂无健康记录。</td></tr>' }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderPlansPage(store) {
+        const plans = store.rehabPlans || [];
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">康复计划</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">任务完成情况</h1>
+            </div>
+            <span class="chip bg-amber-50 text-amber-700">动态更新</span>
+          </div>
+          <div class="grid gap-4 xl:grid-cols-2">
+            ${plans.map(plan => {
+              const patient = getPatientById(store, plan.patientId);
+              const patientTasks = getPatientTasks(store, plan.patientId);
+              const doneCount = patientTasks.filter(task => task.status === '已完成').length;
+              return `
+                <div class="panel p-5">
+                  <div class="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-lg font-bold text-slate-800">${plan.planName}</div>
+                      <div class="text-sm text-slate-500">${patient ? patient.name : plan.patientId} · ${plan.startDate} 至 ${plan.endDate}</div>
+                    </div>
+                    <span class="status-chip ${plan.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : plan.status === '进行中' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}">${plan.status}</span>
+                  </div>
+                  <div class="mb-3">
+                    <div class="mb-1 text-sm font-semibold text-slate-600">康复目标</div>
+                    <div class="text-sm text-slate-600">${plan.goal}</div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="mb-1 text-sm font-semibold text-slate-600">每周任务</div>
+                    <ul class="list-disc pl-5 text-sm text-slate-600">
+                      ${plan.weeklyTasks.map(task => `<li>${task}</li>`).join('')}
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="mb-2 flex items-center justify-between text-sm text-slate-600">
+                      <span>当前完成情况</span>
+                      <span>${plan.currentCompletion || Math.round((doneCount / Math.max(patientTasks.length, 1)) * 100)}%</span>
+                    </div>
+                    <div class="flow-bar">
+                      <div class="h-full rounded-full bg-gradient-to-r from-medical-500 to-care-500" style="width:${plan.currentCompletion || Math.round((doneCount / Math.max(patientTasks.length, 1)) * 100)}%"></div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      function renderFollowUpsPage(store) {
+        const followUps = store.followUps || [];
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">随访管理</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">随访列表</h1>
+            </div>
+            <span class="chip bg-blue-50 text-blue-700">动态更新</span>
+          </div>
+          <div class="panel p-4">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr class="text-left text-sm text-slate-500">
+                    <th>患者</th>
+                    <th>日期</th>
+                    <th>方式</th>
+                    <th>状态</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${followUps.length ? followUps.map(item => `
+                    <tr>
+                      <td>${item.patientName}</td>
+                      <td>${formatDate(item.dueDate)}</td>
+                      <td>${item.method}</td>
+                      <td><span class="status-chip ${item.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${item.status}</span></td>
+                      <td>${item.note}</td>
+                    </tr>
+                  `).join('') : '<tr><td colspan="5" class="py-4 text-sm text-slate-500">暂无随访记录。</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderEventsPage(store) {
+        const events = store.riskEvents || [];
+        return `
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div class="label">风险事件</div>
+              <h1 class="mt-2 text-3xl font-bold text-slate-800">风险事件列表</h1>
+            </div>
+            <span class="chip bg-red-50 text-red-700">动态更新</span>
+          </div>
+          <div class="space-y-4">
+            ${events.length ? events.map(item => `
+              <div class="panel p-4">
+                <div class="mb-2 flex items-center justify-between">
+                  <div class="font-bold text-slate-800">${item.patientName} · ${item.eventType}</div>
+                  <span class="status-chip ${item.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}">${item.status}</span>
+                </div>
+                <div class="text-sm text-slate-600">${item.description}</div>
+                <div class="mt-2 text-xs text-slate-500">事件时间：${formatDateTime(item.eventTime)}</div>
+              </div>
+            `).join('') : '<div class="panel p-5 text-sm text-slate-500">暂无风险事件。</div>'}
+          </div>
+        `;
       }
 
       function renderHomePage(store) {
-        const stats = getDashboardStats(store);
-        const recentRecords = [...store.healthRecords].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-        const recentPatients = [...store.patients].slice(0, 6);
+        const stats = getHomeStats(store);
+        const recentRecords = (store.healthRecords || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+        const recentPatients = (store.patients || []).slice(0, 6);
+        const latestDate = getLatestRecordDate(store.healthRecords || []);
         return `
           <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -327,26 +976,36 @@
             ${DEMO_NOTICE}
           </div>
 
-          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
             <div class="stat-card panel p-5">
-              <div class="label">患者人数</div>
+              <div class="label">患者总数</div>
               <div class="mt-3 text-3xl font-bold text-medical-700">${stats.totalPatients}</div>
-              <div class="mt-2 text-sm text-slate-500">模拟数据：共 ${stats.totalPatients} 名虚构患者</div>
+              <div class="mt-2 text-sm text-slate-500">当前演示数据</div>
             </div>
             <div class="stat-card panel p-5">
-              <div class="label">健康记录</div>
+              <div class="label">健康记录数</div>
               <div class="mt-3 text-3xl font-bold text-emerald-700">${stats.totalRecords}</div>
-              <div class="mt-2 text-sm text-slate-500">累计近 7 天记录</div>
+              <div class="mt-2 text-sm text-slate-500">累计记录</div>
             </div>
             <div class="stat-card panel p-5">
-              <div class="label">任务完成率</div>
-              <div class="mt-3 text-3xl font-bold text-amber-700">${stats.completionRate}%</div>
-              <div class="mt-2 text-sm text-slate-500">计划达标比例</div>
+              <div class="label">今日新增</div>
+              <div class="mt-3 text-3xl font-bold text-cyan-700">${stats.todayRecords}</div>
+              <div class="mt-2 text-sm text-slate-500">${latestDate ? formatDate(latestDate) : '暂无记录'}</div>
             </div>
             <div class="stat-card panel p-5">
               <div class="label">待随访</div>
               <div class="mt-3 text-3xl font-bold text-red-700">${stats.pendingFollowUps}</div>
-              <div class="mt-2 text-sm text-slate-500">当前需处理的随访任务</div>
+              <div class="mt-2 text-sm text-slate-500">待处理</div>
+            </div>
+            <div class="stat-card panel p-5">
+              <div class="label">待处理风险</div>
+              <div class="mt-3 text-3xl font-bold text-amber-700">${stats.pendingEvents}</div>
+              <div class="mt-2 text-sm text-slate-500">事件数</div>
+            </div>
+            <div class="stat-card panel p-5">
+              <div class="label">任务完成率</div>
+              <div class="mt-3 text-3xl font-bold text-violet-700">${stats.completionRate}%</div>
+              <div class="mt-2 text-sm text-slate-500">总任务完成</div>
             </div>
           </div>
 
@@ -368,8 +1027,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    ${recentRecords.map(record => {
-                      const patient = store.patients.find(item => item.id === record.patientId);
+                    ${recentRecords.length ? recentRecords.map(record => {
+                      const patient = getPatientById(store, record.patientId);
                       return `<tr>
                         <td class="font-semibold text-slate-700">${patient ? patient.name : record.patientId}</td>
                         <td>${formatDate(record.date)}</td>
@@ -377,7 +1036,7 @@
                         <td>${record.diastolic} mmHg</td>
                         <td>${record.heartRate} bpm</td>
                       </tr>`;
-                    }).join('')}
+                    }).join('') : '<tr><td colspan="5" class="py-4 text-sm text-slate-500">暂无健康数据。</td></tr>'}
                   </tbody>
                 </table>
               </div>
@@ -404,324 +1063,6 @@
         `;
       }
 
-      function renderPatientsPage(store) {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">患者管理</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">患者列表</h1>
-            </div>
-            <span class="chip bg-blue-50 text-blue-700">模拟数据</span>
-          </div>
-          <div class="panel p-4">
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr class="text-left text-sm text-slate-500">
-                    <th>患者编号</th>
-                    <th>姓名</th>
-                    <th>年龄</th>
-                    <th>性别</th>
-                    <th>疾病类型</th>
-                    <th>康复阶段</th>
-                    <th>数字工具使用能力</th>
-                    <th>主要自我管理需求</th>
-                    <th>随访方式</th>
-                    <th>最近健康记录</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${store.patients.map(patient => `
-                    <tr>
-                      <td class="font-semibold text-slate-800">${patient.id}</td>
-                      <td>${patient.name}</td>
-                      <td>${patient.age}</td>
-                      <td>${patient.gender}</td>
-                      <td>${patient.diagnosis}</td>
-                      <td>${patient.rehabStage}</td>
-                      <td>${patient.digitalSkill}</td>
-                      <td>${patient.primaryNeed}</td>
-                      <td>${patient.followupMode}</td>
-                      <td>${formatDate(patient.lastRecordDate)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-      }
-
-      function renderHealthPage(store) {
-        const patientIds = store.patients.slice(0, 6).map(item => item.id);
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">健康数据中心</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">最近 7 天健康记录</h1>
-            </div>
-            <span class="chip bg-emerald-50 text-emerald-700">模拟数据</span>
-          </div>
-          <div class="space-y-5">
-            ${patientIds.map(patientId => {
-              const patient = store.patients.find(item => item.id === patientId);
-              const records = store.healthRecords.filter(item => item.patientId === patientId).slice(-7);
-              return `
-                <div class="panel p-4">
-                  <div class="mb-3 flex items-center justify-between">
-                    <div>
-                      <div class="text-lg font-bold text-slate-800">${patient.name} (${patient.id})</div>
-                      <div class="text-sm text-slate-500">${patient.diagnosis} · 最近 7 天记录</div>
-                    </div>
-                    <span class="chip bg-slate-100 text-slate-700">模拟数据</span>
-                  </div>
-                  <div class="table-scroll">
-                    <table>
-                      <thead>
-                        <tr class="text-left text-sm text-slate-500">
-                          <th>日期</th>
-                          <th>收缩压</th>
-                          <th>舒张压</th>
-                          <th>静息心率</th>
-                          <th>体重</th>
-                          <th>每日运动时间</th>
-                          <th>睡眠时间</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${records.map(record => `
-                          <tr>
-                            <td>${formatDate(record.date)}</td>
-                            <td>${record.systolic} mmHg</td>
-                            <td>${record.diastolic} mmHg</td>
-                            <td>${record.heartRate} bpm</td>
-                            <td>${record.weight} kg</td>
-                            <td>${record.workoutMinutes} min</td>
-                            <td>${record.sleepHours} h</td>
-                          </tr>
-                        `).join('')}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }
-
-      function renderPlansPage(store) {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">康复计划</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">模拟康复计划</h1>
-            </div>
-            <span class="chip bg-amber-50 text-amber-700">模拟数据</span>
-          </div>
-          <div class="grid gap-4 xl:grid-cols-2">
-            ${store.rehabPlans.slice(0, 10).map(plan => {
-              const patient = store.patients.find(item => item.id === plan.patientId);
-              return `
-                <div class="panel p-5">
-                  <div class="mb-3 flex items-start justify-between gap-3">
-                    <div>
-                      <div class="text-lg font-bold text-slate-800">${plan.planName}</div>
-                      <div class="text-sm text-slate-500">${patient ? patient.name : plan.patientId} · ${plan.startDate} 至 ${plan.endDate}</div>
-                    </div>
-                    <span class="status-chip ${plan.status === '进行中' ? 'bg-blue-50 text-blue-700' : plan.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${plan.status}</span>
-                  </div>
-                  <div class="mb-3">
-                    <div class="mb-1 text-sm font-semibold text-slate-600">康复目标</div>
-                    <div class="text-sm text-slate-600">${plan.goal}</div>
-                  </div>
-                  <div class="mb-3">
-                    <div class="mb-1 text-sm font-semibold text-slate-600">每周任务</div>
-                    <ul class="list-disc pl-5 text-sm text-slate-600">
-                      ${plan.weeklyTasks.map(task => `<li>${task}</li>`).join('')}
-                    </ul>
-                  </div>
-                  <div>
-                    <div class="mb-2 flex items-center justify-between text-sm text-slate-600">
-                      <span>当前完成情况</span>
-                      <span>${plan.currentCompletion}%</span>
-                    </div>
-                    <div class="flow-bar">
-                      <div class="h-full rounded-full bg-gradient-to-r from-medical-500 to-care-500" style="width:${plan.currentCompletion}%"></div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }
-
-      function renderFollowUpsPage(store) {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">随访管理</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">随访记录</h1>
-            </div>
-            <span class="chip bg-blue-50 text-blue-700">模拟数据</span>
-          </div>
-          <div class="panel p-4">
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr class="text-left text-sm text-slate-500">
-                    <th>患者</th>
-                    <th>计划日期</th>
-                    <th>随访方式</th>
-                    <th>状态</th>
-                    <th>结果</th>
-                    <th>备注</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${store.followUps.map(item => `
-                    <tr>
-                      <td>${item.patientName}</td>
-                      <td>${formatDate(item.dueDate)}</td>
-                      <td>${item.method}</td>
-                      <td><span class="status-chip ${item.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${item.status}</span></td>
-                      <td>${item.result}</td>
-                      <td>${item.note}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-      }
-
-      function renderEventsPage(store) {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">风险事件</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">风险事件列表</h1>
-            </div>
-            <span class="chip bg-red-50 text-red-700">模拟数据</span>
-          </div>
-          <div class="space-y-4">
-            ${store.riskEvents.map(item => `
-              <div class="panel p-4">
-                <div class="mb-2 flex items-center justify-between">
-                  <div class="font-bold text-slate-800">${item.patientName} · ${item.eventType}</div>
-                  <span class="status-chip ${item.status === '已完成' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}">${item.status}</span>
-                </div>
-                <div class="text-sm text-slate-600">${item.description}</div>
-                <div class="mt-2 text-xs text-slate-500">事件时间：${formatDateTime(item.eventTime)}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      function renderEducationPage() {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">健康教育</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">模拟教育内容</h1>
-            </div>
-            <span class="chip bg-cyan-50 text-cyan-700">模拟数据</span>
-          </div>
-          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            ${[ '冠心病基础知识', '居家心脏康复的基本原则', '合理膳食与低盐饮食', '药物管理与安全用药', '心理调适与睡眠管理', '危险信号识别与复诊' ].map((item, index) => `
-              <div class="panel p-5">
-                <div class="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">专题 ${index + 1}</div>
-                <h3 class="text-lg font-bold text-slate-800">${item}</h3>
-                <p class="mt-3 text-sm text-slate-600">模拟数据：仅用于演示平台教育内容，展示重点知识点与提醒事项。重点强调居家心脏康复管理中的安全与持续性。</p>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      function renderAiPage() {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">AI问答演示</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">AI问答模块</h1>
-            </div>
-            <span class="chip bg-violet-50 text-violet-700">演示状态</span>
-          </div>
-          <div class="panel p-6 text-slate-700">
-            当前阶段暂不开发 AI 问答功能，本页面仅保留演示入口。所有文本均为模拟数据，不用于真实医疗问答。
-          </div>
-        `;
-      }
-
-      function renderProfilesPage(store) {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">患者画像</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">患者画像概览</h1>
-            </div>
-            <span class="chip bg-fuchsia-50 text-fuchsia-700">模拟数据</span>
-          </div>
-          <div class="grid gap-4 xl:grid-cols-2">
-            ${store.patients.slice(0, 8).map(patient => `
-              <div class="panel p-5">
-                <div class="mb-3 flex items-center justify-between">
-                  <div>
-                    <div class="text-lg font-bold text-slate-800">${patient.name}</div>
-                    <div class="text-sm text-slate-500">${patient.id} · ${patient.diagnosis}</div>
-                  </div>
-                  <span class="status-chip bg-violet-50 text-violet-700">${patient.rehabStage}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                  <div><span class="font-semibold">年龄：</span>${patient.age}</div>
-                  <div><span class="font-semibold">性别：</span>${patient.gender}</div>
-                  <div><span class="font-semibold">数字能力：</span>${patient.digitalSkill}</div>
-                  <div><span class="font-semibold">随访方式：</span>${patient.followupMode}</div>
-                </div>
-                <div class="mt-3 text-sm text-slate-600"><span class="font-semibold">管理需求：</span>${patient.primaryNeed}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      function renderDcePage() {
-        return `
-          <div class="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div class="label">DCE演示</div>
-              <h1 class="mt-2 text-3xl font-bold text-slate-800">离散选择实验</h1>
-            </div>
-            <span class="chip bg-indigo-50 text-indigo-700">模拟数据</span>
-          </div>
-          <div class="space-y-4">
-            ${[
-              ['若需选择居家心脏康复服务方式，您更倾向于哪项？', '社区护士电话随访', '线上平台记录+远程指导'],
-              ['如果服务摊位不同，您更关注什么？', '成本较低', '服务更全面'],
-              ['您更希望随访频率如何？', '每周一次', '每两周一次']
-            ].map(([question, left, right], index) => `
-              <div class="panel p-5">
-                <div class="mb-3 text-base font-bold text-slate-800">${index + 1}. ${question}</div>
-                <div class="grid gap-3 md:grid-cols-2">
-                  <div class="choice-card selected rounded-2xl border p-4">
-                    <div class="font-semibold text-slate-800">方案 A</div>
-                    <div class="mt-1 text-sm text-slate-600">${left}</div>
-                  </div>
-                  <div class="choice-card rounded-2xl border p-4">
-                    <div class="font-semibold text-slate-800">方案 B</div>
-                    <div class="mt-1 text-sm text-slate-600">${right}</div>
-                  </div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
       function renderSystemPage() {
         return `
           <div class="mb-6 flex items-center justify-between gap-3">
@@ -735,6 +1076,7 @@
             <p>本系统用于展示心血管疾病患者居家心脏康复自我管理平台原型。</p>
             <p>所有患者信息、健康记录、康复计划和风险事件均为模拟数据，不能被当作真实病历或真实患者资料。</p>
             <p>本页面通过浏览器 localStorage 保存演示数据，刷新后数据保持可见。可使用“恢复演示初始数据”按钮回到初始演示状态。</p>
+            <p>本问答模块为本地知识库问答，并非实时AI接入，所有答案均基于本地知识库与来源说明。</p>
           </div>
         `;
       }
@@ -746,22 +1088,173 @@
           case '/plans': return renderPlansPage(store);
           case '/followups': return renderFollowUpsPage(store);
           case '/events': return renderEventsPage(store);
-          case '/education': return renderEducationPage();
+          case '/education': return renderEducationPage(store);
           case '/ai': return renderAiPage();
-          case '/profiles': return renderProfilesPage(store);
-          case '/dce': return renderDcePage();
+          case '/profiles': return renderPatientsPage(store);
+          case '/dce': return renderPatientsPage(store);
           case '/system': return renderSystemPage();
           case '/home':
           default: return renderHomePage(store);
         }
       }
 
+      function setToast(message) {
+        const toast = document.getElementById('globalToast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(setToast.timer);
+        setToast.timer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+
+      function bindAiInteractions() {
+        const input = document.getElementById('aiQuestionInput');
+        const button = document.getElementById('aiSearchBtn');
+        const filter = document.getElementById('aiCategoryFilter');
+        const panel = document.getElementById('aiAnswerPanel');
+        if (!input || !button || !filter || !panel) return;
+        const refresh = () => {
+          appState.aiQuery = input.value.trim();
+          appState.aiCategory = filter.value;
+          panel.innerHTML = renderAiAnswerPanel(appState.aiQuery, appState.aiCategory);
+          panel.querySelectorAll('[data-ai-question]').forEach(node => {
+            node.addEventListener('click', () => {
+              input.value = node.getAttribute('data-ai-question');
+              appState.aiQuery = input.value.trim();
+              refresh();
+            });
+          });
+          panel.querySelectorAll('[data-ai-category]').forEach(node => {
+            node.addEventListener('click', () => {
+              filter.value = node.getAttribute('data-ai-category');
+              appState.aiCategory = filter.value;
+              refresh();
+            });
+          });
+          panel.querySelectorAll('[data-ai-edu]').forEach(node => {
+            node.addEventListener('click', () => {
+              const category = node.getAttribute('data-ai-edu');
+              appState.aiCategory = category;
+              location.hash = '#/education';
+            });
+          });
+        };
+        button.addEventListener('click', refresh);
+        input.addEventListener('keydown', event => {
+          if (event.key === 'Enter') refresh();
+        });
+        filter.addEventListener('change', refresh);
+        document.querySelectorAll('[data-ai-question]').forEach(node => {
+          node.addEventListener('click', () => {
+            input.value = node.getAttribute('data-ai-question');
+            appState.aiQuery = input.value.trim();
+            refresh();
+          });
+        });
+        document.querySelectorAll('[data-ai-category]').forEach(node => {
+          node.addEventListener('click', () => {
+            filter.value = node.getAttribute('data-ai-category');
+            appState.aiCategory = filter.value;
+            refresh();
+          });
+        });
+      }
+
+      function bindPatientInteractions() {
+        document.querySelectorAll('[data-patient-select]').forEach(node => {
+          node.addEventListener('click', () => {
+            const patientId = node.getAttribute('data-patient-select');
+            appState.selectedPatientId = patientId;
+            renderApp();
+          });
+        });
+
+        const healthForm = document.getElementById('healthRecordForm');
+        if (healthForm) {
+          healthForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const store = readStore();
+            const patientId = (healthForm.elements.patientId.value || appState.selectedPatientId || store.patients[0]?.id);
+            const patient = getPatientById(store, patientId);
+            if (!patient) {
+              setToast('未找到对应患者');
+              return;
+            }
+            const formData = new FormData(healthForm);
+            const record = {
+              id: uid('record'),
+              patientId,
+              date: formData.get('date') || new Date().toISOString().slice(0,10),
+              systolic: Number(formData.get('systolic')),
+              diastolic: Number(formData.get('diastolic')),
+              heartRate: Number(formData.get('heartRate')),
+              weight: Number(formData.get('weight')),
+              workoutMinutes: Number(formData.get('workoutMinutes')),
+              sleepHours: Number(formData.get('sleepHours')),
+              note: '模拟数据：新增健康记录',
+              isDemo: true
+            };
+            store.healthRecords.push(record);
+            patient.lastRecordDate = record.date;
+            store.lastUpdated = new Date().toISOString();
+            writeStore(store);
+            renderApp();
+            setToast('已新增健康记录并同步更新统计');
+          });
+        }
+
+        const followUpForm = document.getElementById('followUpForm');
+        if (followUpForm) {
+          followUpForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const store = readStore();
+            const patientId = followUpForm.elements.patientId.value || appState.selectedPatientId || store.patients[0]?.id;
+            const patient = getPatientById(store, patientId);
+            if (!patient) {
+              setToast('未找到对应患者');
+              return;
+            }
+            const formData = new FormData(followUpForm);
+            const followUp = {
+              id: uid('followup'),
+              patientId,
+              patientName: patient.name,
+              dueDate: formData.get('dueDate') || new Date().toISOString().slice(0,10),
+              method: formData.get('method') || '电话随访',
+              status: '待随访',
+              result: '模拟数据：新增随访记录，待患者反馈。',
+              note: String(formData.get('note') || '模拟数据：新增随访记录'),
+              isDemo: true
+            };
+            store.followUps.push(followUp);
+            store.lastUpdated = new Date().toISOString();
+            writeStore(store);
+            renderApp();
+            setToast('已新增随访记录并同步更新患者详情');
+          });
+        }
+
+        document.querySelectorAll('.toggle-task-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const store = readStore();
+            const taskId = button.getAttribute('data-task-id');
+            const task = (store.rehabTasks || []).find(item => item.id === taskId);
+            if (!task) return;
+            task.status = task.status === '已完成' ? '待完成' : '已完成';
+            recalcTaskProgress(store);
+            store.lastUpdated = new Date().toISOString();
+            writeStore(store);
+            renderApp();
+            setToast(task.status === '已完成' ? '已完成康复任务并更新统计' : '任务状态已更新');
+          });
+        });
+      }
+
       function renderApp() {
         const route = location.hash.replace(/^#/, '') || '/home';
-        const safeRoute = routeMeta[route] ? route : '/home';
+        const page = routeMeta[route] ? route : '/home';
         const store = readStore();
-        const stats = getDashboardStats(store);
-
+        const stats = getHomeStats(store);
         document.getElementById('app').innerHTML = `
           <div class="page-shell">
             <header class="sticky top-0 z-30 mb-5">
@@ -781,28 +1274,33 @@
 
             <main class="mx-auto max-w-6xl">
               <div class="mb-4 flex items-center justify-between gap-3">
-                <div class="text-sm text-slate-500">当前路径：${routeMeta[safeRoute]}</div>
+                <div class="text-sm text-slate-500">当前路径：${routeMeta[page]}</div>
                 <div class="flex items-center gap-2">
                   <span class="chip bg-cyan-50 text-cyan-700">模拟数据</span>
                   <span class="chip bg-emerald-50 text-emerald-700">${stats.totalPatients} 患者</span>
                 </div>
               </div>
-              ${renderRouteContent(safeRoute, store)}
+              ${renderRouteContent(page, store)}
             </main>
           </div>
           <div id="globalToast" class="toast fixed bottom-5 right-5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg"></div>
         `;
 
-        document.getElementById('resetDemoData')?.addEventListener('click', () => {
-          resetStore();
-          const toast = document.getElementById('globalToast');
-          if (toast) {
-            toast.textContent = '已恢复演示初始数据';
-            toast.classList.add('show');
-            clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
-          }
-        });
+        if (page === '/ai') bindAiInteractions();
+        if (page === '/patients') bindPatientInteractions();
+        if (page === '/home') {
+          document.getElementById('resetDemoData')?.addEventListener('click', () => {
+            resetStore();
+            setToast('已恢复演示初始数据');
+          });
+        }
+        if (page === '/patients') {
+          bindPatientInteractions();
+        }
+      }
+
+      function navLink(path) {
+        return `<a href="#${path}" class="nav-link ${location.hash === '#' + path || (!location.hash && path === '/home') ? 'active' : ''} inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-600">${NAV_ITEMS.find(item => item.path === path)?.label || '首页'}</a>`;
       }
 
       window.addEventListener('hashchange', renderApp);
